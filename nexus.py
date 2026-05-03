@@ -10,7 +10,6 @@ from datetime import datetime, timezone, timedelta
 from difflib import SequenceMatcher
 
 # --- CONFIG ---
-TOKEN = "MTQ5OTI5Njg3MzcxMjg0ODk5OQ.G8zJN5.647v8TqihKdfS-lqrvKHYSFy59kDWUfw_X7D3w"
 OWNER_ID = 1164907857460871228
 GUILD_ID = 1469324805441323099
 STAFF_ROLE_ID = 1498948654344572928
@@ -355,5 +354,6 @@ async def on_member_update(before, after):
                 info["event"].set()
                 if cid in active_nick_targets: del active_nick_targets[cid]
 
-bot.run(TOKEN)
+bot.run(os.getenv('DISCORD_TOKEN'))
+
 
