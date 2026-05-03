@@ -1,3 +1,6 @@
+from flask import Flask
+from threading import Thread
+import os
 import io
 from PIL import Image, ImageDraw, ImageFont
 import discord
@@ -8,7 +11,19 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 from difflib import SequenceMatcher
+app = Flask('')
 
+@app.route('/')
+def home():
+    return "Nexus Bot is Online!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+    
 # --- CONFIG ---
 OWNER_ID = 1164907857460871228
 GUILD_ID = 1469324805441323099
@@ -354,6 +369,8 @@ async def on_member_update(before, after):
                 info["event"].set()
                 if cid in active_nick_targets: del active_nick_targets[cid]
 
+keep_alive() # This starts the 'heartbeat' website
 bot.run(os.getenv('DISCORD_TOKEN'))
+
 
 
