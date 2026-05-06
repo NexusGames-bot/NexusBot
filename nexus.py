@@ -271,7 +271,7 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]
         reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
-        elif mode == "capital":
+    elif mode == "capital":
         target = random.choice(CAPITAL_POOL)
         correct_cap = target['capital']
         wrong_options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3)
@@ -284,20 +284,21 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         view = FlagQuizView(correct_cap, options, channel)
         msg = await channel.send(embed=embed, view=view)
 
-        # Start the 4s transition task immediately
-        async def transition():
-            await asyncio.sleep(4.0)
-            # This ensures the 'cascading' effect continues to other lounges
-        asyncio.create_task(transition())
+        # Background task to handle the 50s timeout without blocking the cascade
+        async def handle_timeout():
+            await asyncio.sleep(50.0)
+            if not view.winner:
+                for child in view.children:
+                    child.disabled = True
+                try: await msg.edit(view=view)
+                except: pass
+        
+        asyncio.create_task(handle_timeout())
 
-        # Keep the function alive to wait for the button click
-        await asyncio.sleep(50.0)
-        if not view.winner:
-            for child in view.children:
-                child.disabled = True
-            try: await msg.edit(view=view)
-            except: pass
-        return
+        # The Cascade Delay: Wait 4s then EXIT the function so the loop hits the next lounge
+        await asyncio.sleep(4.0)
+        return 
+    
     
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
