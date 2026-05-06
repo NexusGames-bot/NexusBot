@@ -311,23 +311,27 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
     elif mode == "logo":
-        # 1. Since LOGO_DATA is a list, pick a random dictionary item
+        # Pick a random logo from your list
         logo_item = random.choice(LOGO_DATA)
-        
-        # 2. Extract the name and domain using the keys from your list
         brand_name = logo_item["name"]
         brand_domain = logo_item["domain"]
         
-        # 3. Set the game variables
+        # Clean the domain (removes http/https and extra paths)
+        clean_domain = brand_domain.replace("https://", "").replace("http://", "").split("/")[0]
+
+        # Set game logic
         ans_list = [brand_name]
         reveal_ans = brand_name
-        tolerance = 1 # Enables the 0.85 similarity check
+        tolerance = 1
         
-        # 4. Configure the embed
-        embed.title = "Guess the Logo!"
-        # This will now correctly pull the domain and your API key
-        embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
-           
+        # Construct the URL
+        logo_url = f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}"
+        
+        # DEBUG: Check your console/logs to see if this URL looks right!
+        print(f"DEBUG: Logo URL is {logo_url}")
+        
+        embed.title = " Guess the Logo!"
+        embed.set_image(url=logo_url)
     
     
     elif mode == "capital":
@@ -343,7 +347,7 @@ async def run_game(channel, mode=None, skip_lb_update=False):
                 for child in view.children: child.disabled = True
                 try: await msg.edit(view=view)
                 except: pass
-        asyncio.create_task(handle_timeout()); await asyncio.sleep(4.0); return 
+        asyncio.create_task(handle_tmeout()); await asyncio.sleep(4.0); return 
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
