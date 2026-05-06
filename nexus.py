@@ -32,9 +32,11 @@ STATS_CHANNEL_ID = 1499320972916953168
 ALL_KNOWING_ROLE_ID = 1499366742579875910
 LOUNGE_IDS = [1499296449521778748, 1499296479427428443, 1499296509961699442, 1499296554236903526, 1499296589460668496, 1499296617680080896]
 DB_FILE = "nexus_database.json"
+LOGODEV_KEY = 'pk_C_LL72tpRECKbvE0bhJ_MA'
 
 # --- ROTATION SYSTEM ---
-GAME_MODES = ["math", "emoji", "lang", "nick", "flags", "colors", "type", "capital"]
+# Added "logo" to the rotation
+GAME_MODES = ["math", "emoji", "lang", "nick", "flags", "colors", "type", "capital", "logo"]
 game_queue = []
 
 # --- CUSTOM EMOJIS ---
@@ -50,7 +52,48 @@ FLAG_DATA = {"ar": "argentina", "au": "australia", "at": "austria", "by": "belar
 LANG_DATA = {"salaam": "persian", "안녕하세요": "korean", "halo": "indonesian", "merhaba": "turkish", "selam": "turkish", "barev dzez": "armenian", "olá": "portuguese", "kumasta": "filipino", "guten tag": "german", "hallo": "german", "halló": "icelandic", "sveiki": "lithuanian", "sat sri akal": "punjabi", "helo": "welsh", "hola": "spanish", "hello": "english", "ahoj": "czech", "witaj": "polish", "sziaztok": "hungarian", "tere": "estonian", "moi": "finnish", "terve": "finnish", "bonjour": "french", "ciao": "italian", "مرحبا": "arabic", "สวัสดี": "thai", "përshëndetje": "albanian", "হ্যালো": "bengali", "hej": "swedish", "xin chao": "vietnamese", "sawasdee": "thai", "dia dhuit": "irish", "kia ora": "maori", "zdravo": "serbian", "jambo": "swahili", "moien": "luxembourgish", "salve": "latin", "здравейте": "bulgarian", "bună": "romanian", "sawubona": "zulu", "sain uu": "mongolian", "shalom": "hebrew", "नमस्ते": "hindi", "γειά σας": "greek", "mingalaba": "burmese", "こんにちは": "japanese", "goedemorgen": "dutch", "yá'at'ééh": "navajo", "здраво": "macedonian", "bok": "croatian", "你好": "chinese", "привет": "russian"}
 COLOR_DATA = {"blue and yellow": "green", "yellow and red": "orange", "red and blue": "purple", "blue and purple": "violet", "red and purple": "magenta", "blue and violet": "indigo", "blue and white": "light blue", "green and white": "light green", "orange and white": "peach", "red and white": "pink", "red and pink": "salmon", "blue and black": "dark blue", "red and brown": "maroon", "green and brown": "olive", "green and yellow": "lime", "green and blue": "teal"}
 
-# Full Capital Data Pool
+LOGO_DATA = [
+    {"name": "Google", "domain": "google.com"}, {"name": "Discord", "domain": "discord.com"},
+    {"name": "Microsoft", "domain": "microsoft.com"}, {"name": "Apple", "domain": "apple.com"},
+    {"name": "Amazon", "domain": "amazon.com"}, {"name": "Meta", "domain": "facebook.com"},
+    {"name": "Instagram", "domain": "instagram.com"}, {"name": "YouTube", "domain": "youtube.com"},
+    {"name": "Netflix", "domain": "netflix.com"}, {"name": "Spotify", "domain": "spotify.com"},
+    {"name": "TikTok", "domain": "tiktok.com"}, {"name": "Twitter", "domain": "twitter.com"},
+    {"name": "WhatsApp", "domain": "whatsapp.com"}, {"name": "GitHub", "domain": "github.com"},
+    {"name": "Samsung", "domain": "samsung.com"}, {"name": "Xiaomi", "domain": "mi.com"},
+    {"name": "OnePlus", "domain": "oneplus.com"}, {"name": "Nvidia", "domain": "nvidia.com"},
+    {"name": "Intel", "domain": "intel.com"}, {"name": "Razer", "domain": "razer.com"},
+    {"name": "Logitech", "domain": "logitech.com"}, {"name": "AMD", "domain": "amd.com"},
+    {"name": "Steam", "domain": "steampowered.com"}, {"name": "Android", "domain": "android.com"},
+    {"name": "McLaren", "domain": "mclaren.com"}, {"name": "Ferrari", "domain": "ferrari.com"},
+    {"name": "Lamborghini", "domain": "lamborghini.com"}, {"name": "Porsche", "domain": "porsche.com"},
+    {"name": "Tesla", "domain": "tesla.com"}, {"name": "BMW", "domain": "bmw.com"},
+    {"name": "Mercedes-Benz", "domain": "mercedes-benz.com"}, {"name": "Audi", "domain": "audi.com"},
+    {"name": "Toyota", "domain": "toyota.com"}, {"name": "Honda", "domain": "honda.com"},
+    {"name": "Ford", "domain": "ford.com"}, {"name": "Hyundai", "domain": "hyundai.com"},
+    {"name": "Volkswagen", "domain": "vw.com"}, {"name": "Bentley", "domain": "bentleymotors.com"},
+    {"name": "Jaguar", "domain": "jaguar.com"}, {"name": "Volvo", "domain": "volvocars.com"},
+    {"name": "McDonald's", "domain": "mcdonalds.com"}, {"name": "Starbucks", "domain": "starbucks.com"},
+    {"name": "KFC", "domain": "kfc.com"}, {"name": "Burger King", "domain": "burgerking.com"},
+    {"name": "Coca-Cola", "domain": "cocacola.com"}, {"name": "Pepsi", "domain": "pepsi.com"},
+    {"name": "Red Bull", "domain": "redbull.com"}, {"name": "Monster Energy", "domain": "monsterenergy.com"},
+    {"name": "Oreo", "domain": "oreo.com"}, {"name": "Pringles", "domain": "pringles.com"},
+    {"name": "Nike", "domain": "nike.com"}, {"name": "Adidas", "domain": "adidas.com"},
+    {"name": "Puma", "domain": "puma.com"}, {"name": "Rolex", "domain": "rolex.com"},
+    {"name": "Gucci", "domain": "gucci.com"}, {"name": "Louis Vuitton", "domain": "louisvuitton.com"},
+    {"name": "Chanel", "domain": "chanel.com"}, {"name": "Prada", "domain": "prada.com"},
+    {"name": "Versace", "domain": "versace.com"}, {"name": "Cartier", "domain": "cartier.com"},
+    {"name": "Supreme", "domain": "supreme.com"}, {"name": "Patagonia", "domain": "patagonia.com"},
+    {"name": "Harvard", "domain": "harvard.edu"}, {"name": "Stanford", "domain": "stanford.edu"},
+    {"name": "MIT", "domain": "mit.edu"}, {"name": "National Geographic", "domain": "nationalgeographic.com"},
+    {"name": "Bluetooth", "domain": "bluetooth.com"}, {"name": "Yamaha", "domain": "yamaha.com"},
+    {"name": "Cisco", "domain": "cisco.com"}, {"name": "Unilever", "domain": "unilever.com"},
+    {"name": "Shell", "domain": "shell.com"}, {"name": "BP", "domain": "bp.com"},
+    {"name": "Visa", "domain": "visa.com"}, {"name": "PayPal", "domain": "paypal.com"},
+    {"name": "Mastercard", "domain": "mastercard.com"}, {"name": "Slack", "domain": "slack.com"},
+    {"name": "Twitch", "domain": "twitch.tv"}, {"name": "Linux", "domain": "kernel.org"}
+]
+
 CAPITAL_POOL = [
     {"name": "Argentina", "capital": "Buenos Aires", "code": "ar"}, {"name": "Australia", "capital": "Canberra", "code": "au"},
     {"name": "Austria", "capital": "Vienna", "code": "at"}, {"name": "Belarus", "capital": "Minsk", "code": "by"},
@@ -181,8 +224,7 @@ async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
     desc = f"{E_WIN} Rank #{rank}\n{E_INFO} {user.mention} won a star {E_STAR}!\n{E_CLICK} Check the Rankings: <#{STATS_CHANNEL_ID}>"
     emb = discord.Embed(description=desc, color=0x2ECC71)
     
-    # Logic for interaction replies (Buttons) vs Standard replies (Messages)
-    if trigger_msg and mode != "nick" and mode != "capital":
+    if trigger_msg and mode not in ["nick", "capital"]:
         await trigger_msg.reply(embed=emb, mention_author=True)
     elif mode == "capital":
         await channel.send(embed=emb, reference=trigger_msg)
@@ -271,35 +313,31 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]
         reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
+    elif mode == "logo":
+        target = random.choice(LOGO_DATA)
+        ans_list = [target['name']]
+        reveal_ans = target['name']
+        embed.title = "Guess the logo!"
+        embed.description = "Type the correct brand name to win a star!"
+        embed.set_image(url=f"https://img.logo.dev/{target['domain']}?token={LOGODEV_KEY}&size=512")
+        tolerance = 0
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL)
         correct_cap = target['capital']
         wrong_options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3)
         options = wrong_options + [correct_cap]
         random.shuffle(options)
-        
         embed.title = "What is the capital of this country?"
         embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
-        
         view = FlagQuizView(correct_cap, options, channel)
         msg = await channel.send(embed=embed, view=view)
-
-        # Background task to handle the 50s timeout without blocking the cascade
         async def handle_timeout():
             await asyncio.sleep(50.0)
             if not view.winner:
-                for child in view.children:
-                    child.disabled = True
+                for child in view.children: child.disabled = True
                 try: await msg.edit(view=view)
                 except: pass
-        
-        asyncio.create_task(handle_timeout())
-
-        # The Cascade Delay: Wait 4s then EXIT the function so the loop hits the next lounge
-        await asyncio.sleep(4.0)
-        return 
-    
-    
+        asyncio.create_task(handle_timeout()); await asyncio.sleep(4.0); return 
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
@@ -322,14 +360,13 @@ async def run_game(channel, mode=None, skip_lb_update=False):
             await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
         finally:
             if channel.id in active_nick_targets: del active_nick_targets[channel.id]
-        else:
+    else:
         def check(m):
             if m.channel != channel or m.author.bot: return False
             content = m.content.strip().lower()
-            for invisible in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(invisible, "")
+            for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
             return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
 
-        # Create a background task for the message listener
         async def message_listener():
             try:
                 winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
@@ -337,12 +374,8 @@ async def run_game(channel, mode=None, skip_lb_update=False):
             except asyncio.TimeoutError:
                 await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
 
-        asyncio.create_task(message_listener())
+        asyncio.create_task(message_listener()); await asyncio.sleep(4.0)
 
-        # The Universal Cascade: Wait 4s then let the loop move to the next lounge
-        await asyncio.sleep(4.0)
-        return
-    
 # --- COMMANDS ---
 def is_staff():
     async def pred(ctx): return ctx.author.id == OWNER_ID or any(r.id == STAFF_ROLE_ID for r in ctx.author.roles)
@@ -371,44 +404,37 @@ async def game(ctx):
     for cid in LOUNGE_IDS:
         chan = bot.get_channel(cid)
         if chan:
-            try:
-                await run_game(chan, skip_lb_update=True)
-                await asyncio.sleep(1) 
-            except Exception as e:
-                print(f"Error in channel {cid}: {e}")
+            try: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1) 
+            except: continue
     await update_leaderboard_display()
 
 @bot.command()
 @is_staff()
 async def emoji(ctx): await run_game(ctx.channel, "emoji")
-
 @bot.command()
 @is_staff()
 async def math(ctx): await run_game(ctx.channel, "math")
-
 @bot.command()
 @is_staff()
 async def flag(ctx): await run_game(ctx.channel, "flags")
-
 @bot.command()
 @is_staff()
 async def language(ctx): await run_game(ctx.channel, "lang")
-
 @bot.command()
 @is_staff()
 async def color(ctx): await run_game(ctx.channel, "colors")
-
 @bot.command()
 @is_staff()
 async def nick(ctx): await run_game(ctx.channel, "nick")
-
 @bot.command()
 @is_staff()
 async def type(ctx): await run_game(ctx.channel, "type")
-
 @bot.command()
 @is_staff()
 async def capital(ctx): await run_game(ctx.channel, "capital")
+@bot.command()
+@is_staff()
+async def logo(ctx): await run_game(ctx.channel, "logo")
 
 @bot.command()
 @is_staff()
@@ -481,9 +507,7 @@ async def automation_loop():
         for cid in LOUNGE_IDS:
             chan = bot.get_channel(cid)
             if chan:
-                try:
-                    await run_game(chan, skip_lb_update=True)
-                    await asyncio.sleep(1) 
+                try: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1) 
                 except: continue
         await update_leaderboard_display()
 
