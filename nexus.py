@@ -325,7 +325,7 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         tolerance = 1
         
         # Construct the URL
-        logo_url = f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}"
+        logo_url = f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512"
         
         # DEBUG: Check your console/logs to see if this URL looks right!
         print(f"DEBUG: Logo URL is {logo_url}")
