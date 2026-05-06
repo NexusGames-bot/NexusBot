@@ -274,11 +274,8 @@ class FlagQuizView(discord.ui.View):
 # --- GAME LOGIC ---
 async def run_game(channel, mode=None, skip_lb_update=False):
     global game_queue
-    # 1. Initialize variables at the very top so the background task can see them
-    ans_list = []
-    reveal_ans = ""
-    tolerance = 0
-    file = None
+    # 1. Initialize all variables at the start to prevent scope errors
+    ans_list, reveal_ans, tolerance, file = [], "", 0, None
     now_str = datetime.now().strftime("Today at %I:%M %p")
     embed = discord.Embed(color=0x2ECC71)
 
@@ -324,12 +321,12 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         random.shuffle(options)
         embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
         view = FlagQuizView(correct_cap, options, channel)
-        await channel.send(embed=embed, view=view)
+        msg = await channel.send(embed=embed, view=view) # Changed interaction.message to msg
         async def handle_timeout():
             await asyncio.sleep(50.0)
             if not view.winner:
                 for child in view.children: child.disabled = True
-                try: await interaction.message.edit(view=view)
+                try: await msg.edit(view=view) # Fixed this line
                 except: pass
         asyncio.create_task(handle_timeout()); await asyncio.sleep(4.0); return 
     elif mode == "nick":
@@ -340,14 +337,13 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         embed.title = "👤 Nickname Game!"; embed.description = "Change your nickname to match the image!"
         file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
 
-    # --- SEND THE MESSAGE ---
+    # --- SEND MESSAGE ---
     embed.set_footer(text=f"Earn a star • {now_str}")
     if file: await channel.send(file=file, embed=embed)
     else: await channel.send(embed=embed)
 
-    # --- THE BACKGROUND HANDLER ---
+    # --- BACKGROUND HANDLER ---
     async def game_handler():
-        # Using the actual variables passed from the outer function
         if mode == "nick":
             try: await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
             except asyncio.TimeoutError:
@@ -360,7 +356,6 @@ async def run_game(channel, mode=None, skip_lb_update=False):
                 content = m.content.strip().lower()
                 for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
                 return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
-
             try:
                 winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
                 await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, update_lb=not skip_lb_update)
@@ -371,6 +366,7 @@ async def run_game(channel, mode=None, skip_lb_update=False):
     asyncio.create_task(game_handler())
     await asyncio.sleep(4.0)
     return
+                
     
     
     
