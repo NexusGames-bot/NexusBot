@@ -355,23 +355,27 @@ async def run_game(channel, mode=None, skip_lb_update=False):
     if file: await channel.send(file=file, embed=embed)
     else: await channel.send(embed=embed)
 
-    if mode == "nick":
-        try:
-            await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
-        except asyncio.TimeoutError:
-            await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
-        finally:
-            if channel.id in active_nick_targets: del active_nick_targets[channel.id]
-    else:
-        async def message_listener():
+        # Handle the game listening/timing
+    async def game_handler():
+        if mode == "nick":
+            try:
+                # Wait for the nickname change event in the background
+                await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
+            except asyncio.TimeoutError:
+                await channel.send(embed=discord.Embed(
+                    description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", 
+                    color=0xFF0000
+                ))
+            finally:
+                if channel.id in active_nick_targets: 
+                    del active_nick_targets[channel.id]
+        else:
+            # Standard message-based games (Math, Logo, Emoji, etc.)
             def check(m):
-                # Using ID for stability in background tasks
                 if m.channel.id != channel.id or m.author.bot: return False
                 content = m.content.strip().lower()
                 for inv in ["\u200d", "\u200b", "\ufeff"]: 
                     content = content.replace(inv, "")
-                
-                # Captures the ans_list and tolerance set in the logo/math/etc blocks
                 return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
 
             try:
@@ -384,10 +388,13 @@ async def run_game(channel, mode=None, skip_lb_update=False):
                         color=0xFF0000
                     ))
 
-        # Start the listener and immediately trigger the 4s cascade
-        asyncio.create_task(message_listener())
-        await asyncio.sleep(4.0)
-        return
+    # Trigger the background listener (Handles Nick AND all other message games)
+    asyncio.create_task(game_handler())
+    
+    # The Universal Cascade: Every game now moves to the next lounge after 4 seconds
+    await asyncio.sleep(4.0)
+    return
+    
     
 # --- COMMANDS ---
 def is_staff():
