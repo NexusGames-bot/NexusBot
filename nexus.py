@@ -310,18 +310,18 @@ async def run_game(channel, mode=None, skip_lb_update=False):
     elif mode == "colors":
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
-    elif mode == "logo":
-        # Check if it's a dictionary or a list to prevent the 'items' crash
-        if isinstance(LOGO_DATA, dict):
-            brand_name, brand_domain = random.choice(list(LOGO_DATA.items()))
-        else:
-            # If it's a list, we assume it's a list of tuples/lists
-            brand_name, brand_domain = random.choice(LOGO_DATA)
-            
+   elif mode == "logo":
+        # 1. Pick a random logo from your dictionary
+        brand_name, brand_domain = random.choice(list(LOGO_DATA.items()))
+        
+        # 2. MUST set these for the message_listener to work
         ans_list = [brand_name]
         reveal_ans = brand_name
-        tolerance = 1
+        tolerance = 1  # This turns on the similarity check (0.85)
+        
+        # 3. Build the embed
         embed.title = " Guess the Logo!"
+        # Use the domain to fetch the image from the API
         embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
     
     
