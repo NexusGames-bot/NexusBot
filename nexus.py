@@ -274,25 +274,28 @@ class FlagQuizView(discord.ui.View):
 # --- GAME LOGIC ---
 async def run_game(channel, mode=None, skip_lb_update=False):
     global game_queue
+    # 1. Initialize variables at the very top so the background task can see them
+    ans_list = []
+    reveal_ans = ""
+    tolerance = 0
+    file = None
+    now_str = datetime.now().strftime("Today at %I:%M %p")
+    embed = discord.Embed(color=0x2ECC71)
+
     if not mode:
         if not game_queue:
             game_queue = GAME_MODES.copy()
             random.shuffle(game_queue)
         mode = game_queue.pop(0)
 
-    now_str = datetime.now().strftime("Today at %I:%M %p")
-    embed = discord.Embed(color=0x2ECC71); ans_list, tolerance, file = [], 0, None
-    reveal_ans = "" 
-
+    # --- GAME MODES ---
     if mode == "type":
-        target = random.choice(SENTENCE_POOL); ans_list = [target]
-        reveal_ans = target
+        target = random.choice(SENTENCE_POOL); ans_list = [target]; reveal_ans = target
         embed.title = "⌨️ Typing Game!"; embed.description = "Type the sentence in the image exactly!"
         file = discord.File(create_text_image(target), filename="game.png")
-        embed.set_image(url="attachment://game.png"); tolerance = 0 
+        embed.set_image(url="attachment://game.png")
     elif mode == "emoji":
-        target = random.choice(EMOJI_POOL); ans_list = [target]
-        reveal_ans = target
+        target = random.choice(EMOJI_POOL); ans_list = [target]; reveal_ans = target
         embed.title = "✨ Emoji Game!"; embed.description = f"First to type the emoji '{target}' wins!"
     elif mode == "math":
         op = random.choice(["+", "-", "x", "/"])
@@ -302,67 +305,51 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         else: b = random.randint(2, 10); res = random.randint(2, 15); a = b * res; q, ans = f"{a} / {b}", str(res)
         ans_list = [ans]; reveal_ans = ans; embed.title = "🔢 Solve the problem!!"; embed.description = f"What is **{q}**?"
     elif mode == "flags":
-        code, name = random.choice(list(FLAG_DATA.items())); ans_list = [name]
-        reveal_ans = name.title()
+        code, name = random.choice(list(FLAG_DATA.items())); ans_list = [name]; reveal_ans = name.title()
         embed.title = "🚩 Guess the flag!"; embed.set_image(url=f"https://flagcdn.com/w640/{code}.png"); tolerance = 1
     elif mode == "lang":
-        phrase, lang = random.choice(list(LANG_DATA.items())); ans_list = [lang]
-        reveal_ans = lang.title()
+        phrase, lang = random.choice(list(LANG_DATA.items())); ans_list = [lang]; reveal_ans = lang.title()
         embed.title = "🌐 Guess the Language!"; embed.description = f"📝 What language is `{phrase}`?"; tolerance = 1
     elif mode == "colors":
-        mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]
-        reveal_ans = res.title()
+        mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
     elif mode == "logo":
         brand_name, brand_domain = random.choice(list(LOGO_DATA.items()))
-        ans_list = [brand_name]
-        reveal_ans = brand_name
+        ans_list = [brand_name]; reveal_ans = brand_name; tolerance = 1
         embed.title = " Guess the Logo!"
         embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
-        
-        # ADD THIS LINE HERE
-        tolerance = 1 
-        
     elif mode == "capital":
-        target = random.choice(CAPITAL_POOL)
-        correct_cap = target['capital']
-        wrong_options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3)
-        options = wrong_options + [correct_cap]
+        target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
+        options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3) + [correct_cap]
         random.shuffle(options)
-        embed.title = "What is the capital of this country?"
-        embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
+        embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
         view = FlagQuizView(correct_cap, options, channel)
-        msg = await channel.send(embed=embed, view=view)
+        await channel.send(embed=embed, view=view)
         async def handle_timeout():
             await asyncio.sleep(50.0)
             if not view.winner:
                 for child in view.children: child.disabled = True
-                try: await msg.edit(view=view)
+                try: await interaction.message.edit(view=view)
                 except: pass
         asyncio.create_task(handle_timeout()); await asyncio.sleep(4.0); return 
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
-        target = f"{random.choice(adjectives)}_{random.choice(animals)}"
-        reveal_ans = target
-        win_event = asyncio.Event()
-        active_nick_targets[channel.id] = {"target": target, "event": win_event}
+        target = f"{random.choice(adjectives)}_{random.choice(animals)}"; reveal_ans = target
+        win_event = asyncio.Event(); active_nick_targets[channel.id] = {"target": target, "event": win_event}
         embed.title = "👤 Nickname Game!"; embed.description = "Change your nickname to match the image!"
-        file = discord.File(create_text_image(target), filename="game.png")
-        embed.set_image(url="attachment://game.png")
+        file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
 
+    # --- SEND THE MESSAGE ---
     embed.set_footer(text=f"Earn a star • {now_str}")
     if file: await channel.send(file=file, embed=embed)
     else: await channel.send(embed=embed)
 
-     # Handle the game listening/timing in a background task
-async def game_handler():
-        # This allows the background task to see the variables defined above
-        nonlocal ans_list, tolerance, reveal_ans 
-
+    # --- THE BACKGROUND HANDLER ---
+    async def game_handler():
+        # Using the actual variables passed from the outer function
         if mode == "nick":
-            try:
-                await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
+            try: await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
             except asyncio.TimeoutError:
                 await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
             finally:
@@ -372,9 +359,6 @@ async def game_handler():
                 if m.channel.id != channel.id or m.author.bot: return False
                 content = m.content.strip().lower()
                 for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
-                
-                # Verify that ans_list isn't empty before checking
-                if not ans_list: return False
                 return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
 
             try:
@@ -384,10 +368,7 @@ async def game_handler():
                 if reveal_ans:
                     await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
 
-    # Trigger the background listener
     asyncio.create_task(game_handler())
-    
-    # The 4s Universal Cascade
     await asyncio.sleep(4.0)
     return
     
