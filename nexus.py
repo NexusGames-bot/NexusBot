@@ -271,21 +271,34 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]
         reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
-    elif mode == "capital":
-        target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
+        elif mode == "capital":
+        target = random.choice(CAPITAL_POOL)
+        correct_cap = target['capital']
         wrong_options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3)
-        options = wrong_options + [correct_cap]; random.shuffle(options)
-        embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
+        options = wrong_options + [correct_cap]
+        random.shuffle(options)
+        
+        embed.title = "What is the capital of this country?"
+        embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
+        
         view = FlagQuizView(correct_cap, options, channel)
         msg = await channel.send(embed=embed, view=view)
-        async def transition(): await asyncio.sleep(4.0)
+
+        # Start the 4s transition task immediately
+        async def transition():
+            await asyncio.sleep(4.0)
+            # This ensures the 'cascading' effect continues to other lounges
         asyncio.create_task(transition())
+
+        # Keep the function alive to wait for the button click
         await asyncio.sleep(50.0)
         if not view.winner:
-            for child in view.children: child.disabled = True
+            for child in view.children:
+                child.disabled = True
             try: await msg.edit(view=view)
             except: pass
         return
+    
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
