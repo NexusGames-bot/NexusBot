@@ -314,13 +314,13 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
     elif mode == "logo":
-        target = random.choice(LOGO_DATA)
-        ans_list = [target['name']]
-        reveal_ans = target['name']
-        embed.title = "Guess the logo!"
-        embed.description = "Type the correct brand name to win a star!"
-        embed.set_image(url=f"https://img.logo.dev/{target['domain']}?token={LOGODEV_KEY}&size=512")
-        tolerance = 0
+        brand_name, brand_domain = random.choice(list(LOGO_DATA.items()))
+        ans_list = [brand_name]
+        reveal_ans = brand_name
+        embed.title = " Guess the Logo!"
+        embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
+        tolerance = 1  # This enables the typo tolerance
+    
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL)
         correct_cap = target['capital']
