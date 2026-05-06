@@ -319,8 +319,10 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         reveal_ans = brand_name
         embed.title = " Guess the Logo!"
         embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
-        tolerance = 1  # This enables the typo tolerance
-    
+        
+        # ADD THIS LINE HERE
+        tolerance = 1 
+        
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL)
         correct_cap = target['capital']
