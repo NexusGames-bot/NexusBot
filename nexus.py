@@ -311,10 +311,14 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
     elif mode == "logo":
-        brand_name, brand_domain = random.choice(list(LOGO_DATA.items()))
-        ans_list = [brand_name]; reveal_ans = brand_name; tolerance = 1
+        # If LOGO_DATA is a list of tuples like [("Name", "domain.com"), ...]
+        brand_name, brand_domain = random.choice(LOGO_DATA) 
+        ans_list = [brand_name]
+        reveal_ans = brand_name
+        tolerance = 1
         embed.title = " Guess the Logo!"
         embed.set_image(url=f"https://img.logo.dev/{brand_domain}?token={LOGODEV_KEY}")
+    
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
         options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3) + [correct_cap]
