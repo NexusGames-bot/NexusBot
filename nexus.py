@@ -363,21 +363,32 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         finally:
             if channel.id in active_nick_targets: del active_nick_targets[channel.id]
     else:
-        def check(m):
-            if m.channel != channel or m.author.bot: return False
-            content = m.content.strip().lower()
-            for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
-            return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
-
         async def message_listener():
+            def check(m):
+                # Using ID for stability in background tasks
+                if m.channel.id != channel.id or m.author.bot: return False
+                content = m.content.strip().lower()
+                for inv in ["\u200d", "\u200b", "\ufeff"]: 
+                    content = content.replace(inv, "")
+                
+                # Captures the ans_list and tolerance set in the logo/math/etc blocks
+                return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
+
             try:
                 winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
                 await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, update_lb=not skip_lb_update)
             except asyncio.TimeoutError:
-                await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
+                if reveal_ans:
+                    await channel.send(embed=discord.Embed(
+                        description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", 
+                        color=0xFF0000
+                    ))
 
-        asyncio.create_task(message_listener()); await asyncio.sleep(4.0)
-
+        # Start the listener and immediately trigger the 4s cascade
+        asyncio.create_task(message_listener())
+        await asyncio.sleep(4.0)
+        return
+    
 # --- COMMANDS ---
 def is_staff():
     async def pred(ctx): return ctx.author.id == OWNER_ID or any(r.id == STAFF_ROLE_ID for r in ctx.author.roles)
