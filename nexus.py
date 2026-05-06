@@ -8,9 +8,9 @@ from discord.ext import commands, tasks
 import asyncio
 import random
 import json
-import os
 from datetime import datetime, timezone, timedelta
 from difflib import SequenceMatcher
+
 app = Flask('')
 
 @app.route('/')
@@ -34,7 +34,7 @@ LOUNGE_IDS = [1499296449521778748, 1499296479427428443, 1499296509961699442, 149
 DB_FILE = "nexus_database.json"
 
 # --- ROTATION SYSTEM ---
-GAME_MODES = ["math", "emoji", "lang", "nick", "flags", "colors", "type"]
+GAME_MODES = ["math", "emoji", "lang", "nick", "flags", "colors", "type", "capital"]
 game_queue = []
 
 # --- CUSTOM EMOJIS ---
@@ -46,9 +46,57 @@ E_STAR = "<a:star_2:1499315733442859008>"
 # --- DATA POOLS ---
 SENTENCE_POOL = ["The quick brown fox jumps over the lazy dog", "Nexus is the ultimate discord community", "Coding a bot is fun and rewarding", "Speed and accuracy are the keys to victory", "Welcome to the Nexus Lounge area", "Type this sentence as fast as you can", "Zeri is the most emo person here", "Zeri likes femboys the most"]
 EMOJI_POOL = ["😀", "😄", "😁", "😆", "😅", "😂", "🤣", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "😶", "😑", "😬", "🙄", "😯", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤮", "🤧", "😷", "🤒", "🤕", "🐶", "🐼", "🐨", "🐯", "🦁", "🐸", "🐵", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦢", "🦉", "🦚", "🦜", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🦒", "🦘", "🐑", "🐐", "🦔", "🐾", "🐉", "🐲"]
-FLAG_DATA = {"ar": "argentina", "au": "australia", "at": "austria", "by": "belarus", "be": "belgium", "bo": "bolivia", "br": "brazil", "bg": "bulgaria", "ca": "canada", "cl": "chile", "cn": "china", "co": "colombia", "hr": "croatia", "cu": "cuba", "cy": "cyprus", "cz": "czech republic", "dk": "denmark", "do": "dominican republic", "ec": "ecuador", "eg": "egypt", "ee": "estonia", "et": "ethiopia", "fj": "fiji", "fi": "finland", "fr": "france", "de": "germany", "gh": "ghana", "gr": "greece", "gd": "grenada", "hu": "hungary", "is": "iceland", "in": "india", "id": "indonesia", "ir": "iran", "iq": "iraq", "ie": "ireland", "il": "israel", "it": "italy", "jm": "jamaica", "jp": "japan", "kz": "kazakhstan", "ke": "kenya", "kr": "south korea", "lt": "lithuania", "lu": "luxembourg", "my": "malaysia", "mu": "mauritius", "mx": "mexico", "mn": "mongolia", "ma": "morocco", "np": "nepal", "nl": "netherlands", "nz": "new zealand", "ng": "call nigeria", "no": "norway", "pk": "pakistan", "py": "paraguay", "pe": "peru", "ph": "philippines", "pl": "poland", "pt": "portugal", "qa": "qatar", "ro": "romania", "ru": "russia", "sa": "saudi arabia", "rs": "serbia", "sg": "singapore", "sk": "slovakia", "si": "slovenia", "za": "south africa", "es": "spain", "lk": "sri lanka", "sd": "sudan", "se": "sweden", "ch": "switzerland", "tw": "taiwan", "tz": "tanzania", "th": "thailand", "tr": "turkey", "ua": "ukraine", "ae": "uae", "gb": "uk", "us": "usa", "uy": "uruguay", "ve": "venezuela", "vn": "vietnam", "zw": "zimbabwe"}
+FLAG_DATA = {"ar": "argentina", "au": "australia", "at": "austria", "by": "belarus", "be": "belgium", "bo": "bolivia", "br": "brazil", "bg": "bulgaria", "ca": "canada", "cl": "chile", "cn": "china", "co": "colombia", "hr": "croatia", "cu": "cuba", "cy": "cyprus", "cz": "czech republic", "dk": "denmark", "do": "dominican republic", "ec": "ecuador", "eg": "egypt", "ee": "estonia", "et": "ethiopia", "fj": "fiji", "fi": "finland", "fr": "france", "de": "germany", "gh": "ghana", "gr": "greece", "gd": "grenada", "hu": "hungary", "is": "iceland", "in": "india", "id": "indonesia", "ir": "iran", "iq": "iraq", "ie": "ireland", "il": "israel", "it": "italy", "jm": "jamaica", "jp": "japan", "kz": "kazakhstan", "ke": "kenya", "kr": "south korea", "lt": "lithuania", "lu": "luxembourg", "my": "malaysia", "mu": "mauritius", "mx": "mexico", "mn": "mongolia", "ma": "morocco", "np": "nepal", "nl": "netherlands", "nz": "new zealand", "ng": "nigeria", "no": "norway", "pk": "pakistan", "py": "paraguay", "pe": "peru", "ph": "philippines", "pl": "poland", "pt": "portugal", "qa": "qatar", "ro": "romania", "ru": "russia", "sa": "saudi arabia", "rs": "serbia", "sg": "singapore", "sk": "slovakia", "si": "slovenia", "za": "south africa", "es": "spain", "lk": "sri lanka", "sd": "sudan", "se": "sweden", "ch": "switzerland", "tw": "taiwan", "tz": "tanzania", "th": "thailand", "tr": "turkey", "ua": "ukraine", "ae": "uae", "gb": "uk", "us": "usa", "uy": "uruguay", "ve": "venezuela", "vn": "vietnam", "zw": "zimbabwe"}
 LANG_DATA = {"salaam": "persian", "안녕하세요": "korean", "halo": "indonesian", "merhaba": "turkish", "selam": "turkish", "barev dzez": "armenian", "olá": "portuguese", "kumasta": "filipino", "guten tag": "german", "hallo": "german", "halló": "icelandic", "sveiki": "lithuanian", "sat sri akal": "punjabi", "helo": "welsh", "hola": "spanish", "hello": "english", "ahoj": "czech", "witaj": "polish", "sziaztok": "hungarian", "tere": "estonian", "moi": "finnish", "terve": "finnish", "bonjour": "french", "ciao": "italian", "مرحبا": "arabic", "สวัสดี": "thai", "përshëndetje": "albanian", "হ্যালো": "bengali", "hej": "swedish", "xin chao": "vietnamese", "sawasdee": "thai", "dia dhuit": "irish", "kia ora": "maori", "zdravo": "serbian", "jambo": "swahili", "moien": "luxembourgish", "salve": "latin", "здравейте": "bulgarian", "bună": "romanian", "sawubona": "zulu", "sain uu": "mongolian", "shalom": "hebrew", "नमस्ते": "hindi", "γειά σας": "greek", "mingalaba": "burmese", "こんにちは": "japanese", "goedemorgen": "dutch", "yá'at'ééh": "navajo", "здраво": "macedonian", "bok": "croatian", "你好": "chinese", "привет": "russian"}
 COLOR_DATA = {"blue and yellow": "green", "yellow and red": "orange", "red and blue": "purple", "blue and purple": "violet", "red and purple": "magenta", "blue and violet": "indigo", "blue and white": "light blue", "green and white": "light green", "orange and white": "peach", "red and white": "pink", "red and pink": "salmon", "blue and black": "dark blue", "red and brown": "maroon", "green and brown": "olive", "green and yellow": "lime", "green and blue": "teal"}
+
+# Full Capital Data Pool
+CAPITAL_POOL = [
+    {"name": "Argentina", "capital": "Buenos Aires", "code": "ar"}, {"name": "Australia", "capital": "Canberra", "code": "au"},
+    {"name": "Austria", "capital": "Vienna", "code": "at"}, {"name": "Belarus", "capital": "Minsk", "code": "by"},
+    {"name": "Belgium", "capital": "Brussels", "code": "be"}, {"name": "Bolivia", "capital": "Sucre", "code": "bo"},
+    {"name": "Brazil", "capital": "Brasilia", "code": "br"}, {"name": "Bulgaria", "capital": "Sofia", "code": "bg"},
+    {"name": "Canada", "capital": "Ottawa", "code": "ca"}, {"name": "Chile", "capital": "Santiago", "code": "cl"},
+    {"name": "China", "capital": "Beijing", "code": "cn"}, {"name": "Colombia", "capital": "Bogotá", "code": "co"},
+    {"name": "Croatia", "capital": "Zagreb", "code": "hr"}, {"name": "Cuba", "capital": "Havana", "code": "cu"},
+    {"name": "Cyprus", "capital": "Nicosia", "code": "cy"}, {"name": "Czechia", "capital": "Prague", "code": "cz"},
+    {"name": "Denmark", "capital": "Copenhagen", "code": "dk"}, {"name": "Dominican Republic", "capital": "Santo Domingo", "code": "do"},
+    {"name": "Ecuador", "capital": "Quito", "code": "ec"}, {"name": "Egypt", "capital": "Cairo", "code": "eg"},
+    {"name": "Estonia", "capital": "Tallinn", "code": "ee"}, {"name": "Ethiopia", "capital": "Addis Ababa", "code": "et"},
+    {"name": "Fiji", "capital": "Suva", "code": "fj"}, {"name": "Finland", "capital": "Helsinki", "code": "fi"},
+    {"name": "France", "capital": "Paris", "code": "fr"}, {"name": "Germany", "capital": "Berlin", "code": "de"},
+    {"name": "Ghana", "capital": "Accra", "code": "gh"}, {"name": "Greece", "capital": "Athens", "code": "gr"},
+    {"name": "Grenada", "capital": "St. George's", "code": "gd"}, {"name": "Hungary", "capital": "Budapest", "code": "hu"},
+    {"name": "Iceland", "capital": "Reykjavík", "code": "is"}, {"name": "India", "capital": "New Delhi", "code": "in"},
+    {"name": "Indonesia", "capital": "Jakarta", "code": "id"}, {"name": "Iran", "capital": "Tehran", "code": "ir"},
+    {"name": "Iraq", "capital": "Baghdad", "code": "iq"}, {"name": "Ireland", "capital": "Dublin", "code": "ie"},
+    {"name": "Israel", "capital": "Jerusalem", "code": "il"}, {"name": "Italy", "capital": "Rome", "code": "it"},
+    {"name": "Jamaica", "capital": "Kingston", "code": "jm"}, {"name": "Japan", "capital": "Tokyo", "code": "jp"},
+    {"name": "Kazakhstan", "capital": "Astana", "code": "kz"}, {"name": "Kenya", "capital": "Nairobi", "code": "ke"},
+    {"name": "South Korea", "capital": "Seoul", "code": "kr"}, {"name": "Lithuania", "capital": "Vilnius", "code": "lt"},
+    {"name": "Luxembourg", "capital": "Luxembourg City", "code": "lu"}, {"name": "Malaysia", "capital": "Kuala Lumpur", "code": "my"},
+    {"name": "Mauritius", "capital": "Port Louis", "code": "mu"}, {"name": "Mexico", "capital": "Mexico City", "code": "mx"},
+    {"name": "Mongolia", "capital": "Ulaanbaatar", "code": "mn"}, {"name": "Morocco", "capital": "Rabat", "code": "ma"},
+    {"name": "Nepal", "capital": "Kathmandu", "code": "np"}, {"name": "Netherlands", "capital": "Amsterdam", "code": "nl"},
+    {"name": "New Zealand", "capital": "Wellington", "code": "nz"}, {"name": "Nigeria", "capital": "Abuja", "code": "ng"},
+    {"name": "Norway", "capital": "Oslo", "code": "no"}, {"name": "Pakistan", "capital": "Islamabad", "code": "pk"},
+    {"name": "Paraguay", "capital": "Asunción", "code": "py"}, {"name": "Peru", "capital": "Lima", "code": "pe"},
+    {"name": "Philippines", "capital": "Manila", "code": "ph"}, {"name": "Poland", "capital": "Warsaw", "code": "pl"},
+    {"name": "Portugal", "capital": "Lisbon", "code": "pt"}, {"name": "Qatar", "capital": "Doha", "code": "qa"},
+    {"name": "Romania", "capital": "Bucharest", "code": "ro"}, {"name": "Russia", "capital": "Moscow", "code": "ru"},
+    {"name": "Saudi Arabia", "capital": "Riyadh", "code": "sa"}, {"name": "Serbia", "capital": "Belgrade", "code": "rs"},
+    {"name": "Singapore", "capital": "Singapore", "code": "sg"}, {"name": "Slovakia", "capital": "Bratislava", "code": "sk"},
+    {"name": "Slovenia", "capital": "Ljubljana", "code": "si"}, {"name": "South Africa", "capital": "Pretoria", "code": "za"},
+    {"name": "Spain", "capital": "Madrid", "code": "es"}, {"name": "Sri Lanka", "capital": "Kotte", "code": "lk"},
+    {"name": "Sudan", "capital": "Khartoum", "code": "sd"}, {"name": "Sweden", "capital": "Stockholm", "code": "se"},
+    {"name": "Switzerland", "capital": "Bern", "code": "ch"}, {"name": "Taiwan", "capital": "Taipei", "code": "tw"},
+    {"name": "Tanzania", "capital": "Dodoma", "code": "tz"}, {"name": "Thailand", "capital": "Bangkok", "code": "th"},
+    {"name": "Turkey", "capital": "Ankara", "code": "tr"}, {"name": "Ukraine", "capital": "Kyiv", "code": "ua"},
+    {"name": "UAE", "capital": "Abu Dhabi", "code": "ae"}, {"name": "United Kingdom", "capital": "London", "code": "gb"},
+    {"name": "USA", "capital": "Washington D.C.", "code": "us"}, {"name": "Uruguay", "capital": "Montevideo", "code": "uy"},
+    {"name": "Venezuela", "capital": "Caracas", "code": "ve"}, {"name": "Vietnam", "capital": "Hanoi", "code": "vn"},
+    {"name": "Zimbabwe", "capital": "Harare", "code": "zw"}
+]
 
 # --- UTILITIES ---
 def similarity(a, b): return SequenceMatcher(None, a.lower(), b.lower()).ratio()
@@ -132,11 +180,54 @@ async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
     rank = get_rank(user.id, data["all_time"])
     desc = f"{E_WIN} Rank #{rank}\n{E_INFO} {user.mention} won a star {E_STAR}!\n{E_CLICK} Check the Rankings: <#{STATS_CHANNEL_ID}>"
     emb = discord.Embed(description=desc, color=0x2ECC71)
-    if trigger_msg and mode != "nick": await trigger_msg.reply(embed=emb, mention_author=True)
-    else: await channel.send(f"{user.mention}", embed=emb)
+    
+    # Logic for interaction replies (Buttons) vs Standard replies (Messages)
+    if trigger_msg and mode != "nick" and mode != "capital":
+        await trigger_msg.reply(embed=emb, mention_author=True)
+    elif mode == "capital":
+        await channel.send(embed=emb, reference=trigger_msg)
+    else:
+        await channel.send(f"{user.mention}", embed=emb)
     
     if update_lb:
         await update_leaderboard_display()
+
+# --- CAPITAL QUIZ VIEW ---
+class FlagQuizView(discord.ui.View):
+    def __init__(self, correct_capital, options, channel):
+        super().__init__(timeout=50.0)
+        self.correct_capital = correct_capital
+        self.options = options
+        self.channel = channel
+        self.winner = None
+        self.attempted_users = set()
+
+        for option in options:
+            btn = discord.ui.Button(label=option, style=discord.ButtonStyle.secondary)
+            btn.callback = self.make_callback(option)
+            self.add_item(btn)
+
+    def make_callback(self, option):
+        async def callback(interaction: discord.Interaction):
+            if self.winner: return
+            if interaction.user.id in self.attempted_users:
+                await interaction.response.send_message("Only one try allowed!", ephemeral=True)
+                return
+            self.attempted_users.add(interaction.user.id)
+            if option == self.correct_capital:
+                self.winner = interaction.user
+                for child in self.children:
+                    child.disabled = True
+                    if child.label == self.correct_capital: child.style = discord.ButtonStyle.success
+                await interaction.response.edit_message(view=self)
+                await award_winner(interaction.user, self.channel, "capital", trigger_msg=interaction.message)
+                self.stop()
+            else:
+                await interaction.response.send_message("❌ Wrong!", ephemeral=True)
+        return callback
+
+    async def on_timeout(self):
+        for child in self.children: child.disabled = True
 
 # --- GAME LOGIC ---
 async def run_game(channel, mode=None, skip_lb_update=False):
@@ -180,6 +271,21 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]
         reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
+    elif mode == "capital":
+        target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
+        wrong_options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3)
+        options = wrong_options + [correct_cap]; random.shuffle(options)
+        embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
+        view = FlagQuizView(correct_cap, options, channel)
+        msg = await channel.send(embed=embed, view=view)
+        async def transition(): await asyncio.sleep(4.0)
+        asyncio.create_task(transition())
+        await asyncio.sleep(50.0)
+        if not view.winner:
+            for child in view.children: child.disabled = True
+            try: await msg.edit(view=view)
+            except: pass
+        return
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
@@ -279,6 +385,10 @@ async def type(ctx): await run_game(ctx.channel, "type")
 
 @bot.command()
 @is_staff()
+async def capital(ctx): await run_game(ctx.channel, "capital")
+
+@bot.command()
+@is_staff()
 async def frequency(ctx, minutes: int):
     data = load_data(); data["interval"] = max(1, minutes); save_data(data)
     await ctx.send(f"✅ Frequency set to **{minutes} minutes**.")
@@ -369,8 +479,5 @@ async def on_member_update(before, after):
                 info["event"].set()
                 if cid in active_nick_targets: del active_nick_targets[cid]
 
-keep_alive() # This starts the 'heartbeat' website
+keep_alive()
 bot.run(os.getenv('DISCORD_TOKEN'))
-
-
-
