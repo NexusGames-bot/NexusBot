@@ -34,114 +34,24 @@ LOUNGE_IDS = [1499296449521778748, 1499296479427428443, 1499296509961699442, 149
 DB_FILE = "nexus_database.json"
 LOGODEV_KEY = 'pk_C_LL72tpRECKbvE0bhJ_MA'
 
-# --- ROTATION SYSTEM ---
-# Added "logo" to the rotation
 GAME_MODES = ["math", "emoji", "lang", "nick", "flags", "colors", "type", "capital", "logo"]
 game_queue = []
 
-# --- CUSTOM EMOJIS ---
 E_WIN = "<a:win_1:1499319116300030033>"
 E_CLICK = "<a:click_1:1499338069944303677>"
 E_INFO = "<a:info_1:1499338148893687938>"
 E_STAR = "<a:star_2:1499315733442859008>"
 
-# --- DATA POOLS ---
 SENTENCE_POOL = ["The quick brown fox jumps over the lazy dog", "Nexus is the ultimate discord community", "Coding a bot is fun and rewarding", "Speed and accuracy are the keys to victory", "Welcome to the Nexus Lounge area", "Type this sentence as fast as you can", "Zeri is the most emo person here", "Zeri likes femboys the most"]
 EMOJI_POOL = ["😀", "😄", "😁", "😆", "😅", "😂", "🤣", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "😶", "😑", "😬", "🙄", "😯", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤮", "🤧", "😷", "🤒", "🤕", "🐶", "🐼", "🐨", "🐯", "🦁", "🐸", "🐵", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦢", "🦉", "🦚", "🦜", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🦒", "🦘", "🐑", "🐐", "🦔", "🐾", "🐉", "🐲"]
 FLAG_DATA = {"ar": "argentina", "au": "australia", "at": "austria", "by": "belarus", "be": "belgium", "bo": "bolivia", "br": "brazil", "bg": "bulgaria", "ca": "canada", "cl": "chile", "cn": "china", "co": "colombia", "hr": "croatia", "cu": "cuba", "cy": "cyprus", "cz": "czech republic", "dk": "denmark", "do": "dominican republic", "ec": "ecuador", "eg": "egypt", "ee": "estonia", "et": "ethiopia", "fj": "fiji", "fi": "finland", "fr": "france", "de": "germany", "gh": "ghana", "gr": "greece", "gd": "grenada", "hu": "hungary", "is": "iceland", "in": "india", "id": "indonesia", "ir": "iran", "iq": "iraq", "ie": "ireland", "il": "israel", "it": "italy", "jm": "jamaica", "jp": "japan", "kz": "kazakhstan", "ke": "kenya", "kr": "south korea", "lt": "lithuania", "lu": "luxembourg", "my": "malaysia", "mu": "mauritius", "mx": "mexico", "mn": "mongolia", "ma": "morocco", "np": "nepal", "nl": "netherlands", "nz": "new zealand", "ng": "nigeria", "no": "norway", "pk": "pakistan", "py": "paraguay", "pe": "peru", "ph": "philippines", "pl": "poland", "pt": "portugal", "qa": "qatar", "ro": "romania", "ru": "russia", "sa": "saudi arabia", "rs": "serbia", "sg": "singapore", "sk": "slovakia", "si": "slovenia", "za": "south africa", "es": "spain", "lk": "sri lanka", "sd": "sudan", "se": "sweden", "ch": "switzerland", "tw": "taiwan", "tz": "tanzania", "th": "thailand", "tr": "turkey", "ua": "ukraine", "ae": "uae", "gb": "uk", "us": "usa", "uy": "uruguay", "ve": "venezuela", "vn": "vietnam", "zw": "zimbabwe"}
 LANG_DATA = {"salaam": "persian", "안녕하세요": "korean", "halo": "indonesian", "merhaba": "turkish", "selam": "turkish", "barev dzez": "armenian", "olá": "portuguese", "kumasta": "filipino", "guten tag": "german", "hallo": "german", "halló": "icelandic", "sveiki": "lithuanian", "sat sri akal": "punjabi", "helo": "welsh", "hola": "spanish", "hello": "english", "ahoj": "czech", "witaj": "polish", "sziaztok": "hungarian", "tere": "estonian", "moi": "finnish", "terve": "finnish", "bonjour": "french", "ciao": "italian", "مرحبا": "arabic", "สวัสดี": "thai", "përshëndetje": "albanian", "হ্যালো": "bengali", "hej": "swedish", "xin chao": "vietnamese", "sawasdee": "thai", "dia dhuit": "irish", "kia ora": "maori", "zdravo": "serbian", "jambo": "swahili", "moien": "luxembourgish", "salve": "latin", "здравейте": "bulgarian", "bună": "romanian", "sawubona": "zulu", "sain uu": "mongolian", "shalom": "hebrew", "नमस्ते": "hindi", "γειά σας": "greek", "mingalaba": "burmese", "こんにちは": "japanese", "goedemorgen": "dutch", "yá'at'ééh": "navajo", "здраво": "macedonian", "bok": "croatian", "你好": "chinese", "привет": "russian"}
 COLOR_DATA = {"blue and yellow": "green", "yellow and red": "orange", "red and blue": "purple", "blue and purple": "violet", "red and purple": "magenta", "blue and violet": "indigo", "blue and white": "light blue", "green and white": "light green", "orange and white": "peach", "red and white": "pink", "red and pink": "salmon", "blue and black": "dark blue", "red and brown": "maroon", "green and brown": "olive", "green and yellow": "lime", "green and blue": "teal"}
 
-LOGO_DATA = [
-    {"name": "Google", "domain": "google.com"}, {"name": "Discord", "domain": "discord.com"},
-    {"name": "Microsoft", "domain": "microsoft.com"}, {"name": "Apple", "domain": "apple.com"},
-    {"name": "Amazon", "domain": "amazon.com"}, {"name": "Meta", "domain": "facebook.com"},
-    {"name": "Instagram", "domain": "instagram.com"}, {"name": "YouTube", "domain": "youtube.com"},
-    {"name": "Netflix", "domain": "netflix.com"}, {"name": "Spotify", "domain": "spotify.com"},
-    {"name": "TikTok", "domain": "tiktok.com"}, {"name": "Twitter", "domain": "twitter.com"},
-    {"name": "WhatsApp", "domain": "whatsapp.com"}, {"name": "GitHub", "domain": "github.com"},
-    {"name": "Samsung", "domain": "samsung.com"}, {"name": "Xiaomi", "domain": "mi.com"},
-    {"name": "OnePlus", "domain": "oneplus.com"}, {"name": "Nvidia", "domain": "nvidia.com"},
-    {"name": "Intel", "domain": "intel.com"}, {"name": "Razer", "domain": "razer.com"},
-    {"name": "Logitech", "domain": "logitech.com"}, {"name": "AMD", "domain": "amd.com"},
-    {"name": "Steam", "domain": "steampowered.com"}, {"name": "Android", "domain": "android.com"},
-    {"name": "McLaren", "domain": "mclaren.com"}, {"name": "Ferrari", "domain": "ferrari.com"},
-    {"name": "Lamborghini", "domain": "lamborghini.com"}, {"name": "Porsche", "domain": "porsche.com"},
-    {"name": "Tesla", "domain": "tesla.com"}, {"name": "BMW", "domain": "bmw.com"},
-    {"name": "Mercedes-Benz", "domain": "mercedes-benz.com"}, {"name": "Audi", "domain": "audi.com"},
-    {"name": "Toyota", "domain": "toyota.com"}, {"name": "Honda", "domain": "honda.com"},
-    {"name": "Ford", "domain": "ford.com"}, {"name": "Hyundai", "domain": "hyundai.com"},
-    {"name": "Volkswagen", "domain": "vw.com"}, {"name": "Bentley", "domain": "bentleymotors.com"},
-    {"name": "Jaguar", "domain": "jaguar.com"}, {"name": "Volvo", "domain": "volvocars.com"},
-    {"name": "McDonald's", "domain": "mcdonalds.com"}, {"name": "Starbucks", "domain": "starbucks.com"},
-    {"name": "KFC", "domain": "kfc.com"}, {"name": "Burger King", "domain": "burgerking.com"},
-    {"name": "Coca-Cola", "domain": "cocacola.com"}, {"name": "Pepsi", "domain": "pepsi.com"},
-    {"name": "Red Bull", "domain": "redbull.com"}, {"name": "Monster Energy", "domain": "monsterenergy.com"},
-    {"name": "Oreo", "domain": "oreo.com"}, {"name": "Pringles", "domain": "pringles.com"},
-    {"name": "Nike", "domain": "nike.com"}, {"name": "Adidas", "domain": "adidas.com"},
-    {"name": "Puma", "domain": "puma.com"}, {"name": "Rolex", "domain": "rolex.com"},
-    {"name": "Gucci", "domain": "gucci.com"}, {"name": "Louis Vuitton", "domain": "louisvuitton.com"},
-    {"name": "Chanel", "domain": "chanel.com"}, {"name": "Prada", "domain": "prada.com"},
-    {"name": "Versace", "domain": "versace.com"}, {"name": "Cartier", "domain": "cartier.com"},
-    {"name": "Supreme", "domain": "supreme.com"}, {"name": "Patagonia", "domain": "patagonia.com"},
-    {"name": "Harvard", "domain": "harvard.edu"}, {"name": "Stanford", "domain": "stanford.edu"},
-    {"name": "MIT", "domain": "mit.edu"}, {"name": "National Geographic", "domain": "nationalgeographic.com"},
-    {"name": "Bluetooth", "domain": "bluetooth.com"}, {"name": "Yamaha", "domain": "yamaha.com"},
-    {"name": "Cisco", "domain": "cisco.com"}, {"name": "Unilever", "domain": "unilever.com"},
-    {"name": "Shell", "domain": "shell.com"}, {"name": "BP", "domain": "bp.com"},
-    {"name": "Visa", "domain": "visa.com"}, {"name": "PayPal", "domain": "paypal.com"},
-    {"name": "Mastercard", "domain": "mastercard.com"}, {"name": "Slack", "domain": "slack.com"},
-    {"name": "Twitch", "domain": "twitch.tv"}, {"name": "Linux", "domain": "kernel.org"}
-]
+LOGO_DATA = [{"name": "Google", "domain": "google.com"}, {"name": "Discord", "domain": "discord.com"}, {"name": "Microsoft", "domain": "microsoft.com"}, {"name": "Apple", "domain": "apple.com"}, {"name": "Amazon", "domain": "amazon.com"}, {"name": "Meta", "domain": "facebook.com"}, {"name": "Instagram", "domain": "instagram.com"}, {"name": "YouTube", "domain": "youtube.com"}, {"name": "Netflix", "domain": "netflix.com"}, {"name": "Spotify", "domain": "spotify.com"}, {"name": "TikTok", "domain": "tiktok.com"}, {"name": "Twitter", "domain": "twitter.com"}, {"name": "WhatsApp", "domain": "whatsapp.com"}, {"name": "GitHub", "domain": "github.com"}, {"name": "Samsung", "domain": "samsung.com"}, {"name": "Xiaomi", "domain": "mi.com"}, {"name": "OnePlus", "domain": "oneplus.com"}, {"name": "Nvidia", "domain": "nvidia.com"}, {"name": "Intel", "domain": "intel.com"}, {"name": "Razer", "domain": "razer.com"}, {"name": "Logitech", "domain": "logitech.com"}, {"name": "AMD", "domain": "amd.com"}, {"name": "Steam", "domain": "steampowered.com"}, {"name": "Android", "domain": "android.com"}, {"name": "McLaren", "domain": "mclaren.com"}, {"name": "Ferrari", "domain": "ferrari.com"}, {"name": "Lamborghini", "domain": "lamborghini.com"}, {"name": "Porsche", "domain": "porsche.com"}, {"name": "Tesla", "domain": "tesla.com"}, {"name": "BMW", "domain": "bmw.com"}, {"name": "Mercedes-Benz", "domain": "mercedes-benz.com"}, {"name": "Audi", "domain": "audi.com"}, {"name": "Toyota", "domain": "toyota.com"}, {"name": "Honda", "domain": "honda.com"}, {"name": "Ford", "domain": "ford.com"}, {"name": "Hyundai", "domain": "hyundai.com"}, {"name": "Volkswagen", "domain": "vw.com"}, {"name": "Bentley", "domain": "bentleymotors.com"}, {"name": "Jaguar", "domain": "jaguar.com"}, {"name": "Volvo", "domain": "volvocars.com"}, {"name": "McDonald's", "domain": "mcdonalds.com"}, {"name": "Starbucks", "domain": "starbucks.com"}, {"name": "KFC", "domain": "kfc.com"}, {"name": "Burger King", "domain": "burgerking.com"}, {"name": "Coca-Cola", "domain": "cocacola.com"}, {"name": "Pepsi", "domain": "pepsi.com"}, {"name": "Red Bull", "domain": "redbull.com"}, {"name": "Monster Energy", "domain": "monsterenergy.com"}, {"name": "Oreo", "domain": "oreo.com"}, {"name": "Pringles", "domain": "pringles.com"}, {"name": "Nike", "domain": "nike.com"}, {"name": "Adidas", "domain": "adidas.com"}, {"name": "Puma", "domain": "puma.com"}, {"name": "Rolex", "domain": "rolex.com"}, {"name": "Gucci", "domain": "gucci.com"}, {"name": "Louis Vuitton", "domain": "louisvuitton.com"}, {"name": "Chanel", "domain": "chanel.com"}, {"name": "Prada", "domain": "prada.com"}, {"name": "Versace", "domain": "versace.com"}, {"name": "Cartier", "domain": "cartier.com"}, {"name": "Supreme", "domain": "supreme.com"}, {"name": "Patagonia", "domain": "patagonia.com"}, {"name": "Harvard", "domain": "harvard.edu"}, {"name": "Stanford", "domain": "stanford.edu"}, {"name": "MIT", "domain": "mit.edu"}, {"name": "National Geographic", "domain": "nationalgeographic.com"}, {"name": "Bluetooth", "domain": "bluetooth.com"}, {"name": "Yamaha", "domain": "yamaha.com"}, {"name": "Cisco", "domain": "cisco.com"}, {"name": "Unilever", "domain": "unilever.com"}, {"name": "Shell", "domain": "shell.com"}, {"name": "BP", "domain": "bp.com"}, {"name": "Visa", "domain": "visa.com"}, {"name": "PayPal", "domain": "paypal.com"}, {"name": "Mastercard", "domain": "mastercard.com"}, {"name": "Slack", "domain": "slack.com"}, {"name": "Twitch", "domain": "twitch.tv"}, {"name": "Linux", "domain": "kernel.org"}]
 
-CAPITAL_POOL = [
-    {"name": "Argentina", "capital": "Buenos Aires", "code": "ar"}, {"name": "Australia", "capital": "Canberra", "code": "au"},
-    {"name": "Austria", "capital": "Vienna", "code": "at"}, {"name": "Belarus", "capital": "Minsk", "code": "by"},
-    {"name": "Belgium", "capital": "Brussels", "code": "be"}, {"name": "Bolivia", "capital": "Sucre", "code": "bo"},
-    {"name": "Brazil", "capital": "Brasilia", "code": "br"}, {"name": "Bulgaria", "capital": "Sofia", "code": "bg"},
-    {"name": "Canada", "capital": "Ottawa", "code": "ca"}, {"name": "Chile", "capital": "Santiago", "code": "cl"},
-    {"name": "China", "capital": "Beijing", "code": "cn"}, {"name": "Colombia", "capital": "Bogotá", "code": "co"},
-    {"name": "Croatia", "capital": "Zagreb", "code": "hr"}, {"name": "Cuba", "capital": "Havana", "code": "cu"},
-    {"name": "Cyprus", "capital": "Nicosia", "code": "cy"}, {"name": "Czechia", "capital": "Prague", "code": "cz"},
-    {"name": "Denmark", "capital": "Copenhagen", "code": "dk"}, {"name": "Dominican Republic", "capital": "Santo Domingo", "code": "do"},
-    {"name": "Ecuador", "capital": "Quito", "code": "ec"}, {"name": "Egypt", "capital": "Cairo", "code": "eg"},
-    {"name": "Estonia", "capital": "Tallinn", "code": "ee"}, {"name": "Ethiopia", "capital": "Addis Ababa", "code": "et"},
-    {"name": "Fiji", "capital": "Suva", "code": "fj"}, {"name": "Finland", "capital": "Helsinki", "code": "fi"},
-    {"name": "France", "capital": "Paris", "code": "fr"}, {"name": "Germany", "capital": "Berlin", "code": "de"},
-    {"name": "Ghana", "capital": "Accra", "code": "gh"}, {"name": "Greece", "capital": "Athens", "code": "gr"},
-    {"name": "Grenada", "capital": "St. George's", "code": "gd"}, {"name": "Hungary", "capital": "Budapest", "code": "hu"},
-    {"name": "Iceland", "capital": "Reykjavík", "code": "is"}, {"name": "India", "capital": "New Delhi", "code": "in"},
-    {"name": "Indonesia", "capital": "Jakarta", "code": "id"}, {"name": "Iran", "capital": "Tehran", "code": "ir"},
-    {"name": "Iraq", "capital": "Baghdad", "code": "iq"}, {"name": "Ireland", "capital": "Dublin", "code": "ie"},
-    {"name": "Israel", "capital": "Jerusalem", "code": "il"}, {"name": "Italy", "capital": "Rome", "code": "it"},
-    {"name": "Jamaica", "capital": "Kingston", "code": "jm"}, {"name": "Japan", "capital": "Tokyo", "code": "jp"},
-    {"name": "Kazakhstan", "capital": "Astana", "code": "kz"}, {"name": "Kenya", "capital": "Nairobi", "code": "ke"},
-    {"name": "South Korea", "capital": "Seoul", "code": "kr"}, {"name": "Lithuania", "capital": "Vilnius", "code": "lt"},
-    {"name": "Luxembourg", "capital": "Luxembourg City", "code": "lu"}, {"name": "Malaysia", "capital": "Kuala Lumpur", "code": "my"},
-    {"name": "Mauritius", "capital": "Port Louis", "code": "mu"}, {"name": "Mexico", "capital": "Mexico City", "code": "mx"},
-    {"name": "Mongolia", "capital": "Ulaanbaatar", "code": "mn"}, {"name": "Morocco", "capital": "Rabat", "code": "ma"},
-    {"name": "Nepal", "capital": "Kathmandu", "code": "np"}, {"name": "Netherlands", "capital": "Amsterdam", "code": "nl"},
-    {"name": "New Zealand", "capital": "Wellington", "code": "nz"}, {"name": "Nigeria", "capital": "Abuja", "code": "ng"},
-    {"name": "Norway", "capital": "Oslo", "code": "no"}, {"name": "Pakistan", "capital": "Islamabad", "code": "pk"},
-    {"name": "Paraguay", "capital": "Asunción", "code": "py"}, {"name": "Peru", "capital": "Lima", "code": "pe"},
-    {"name": "Philippines", "capital": "Manila", "code": "ph"}, {"name": "Poland", "capital": "Warsaw", "code": "pl"},
-    {"name": "Portugal", "capital": "Lisbon", "code": "pt"}, {"name": "Qatar", "capital": "Doha", "code": "qa"},
-    {"name": "Romania", "capital": "Bucharest", "code": "ro"}, {"name": "Russia", "capital": "Moscow", "code": "ru"},
-    {"name": "Saudi Arabia", "capital": "Riyadh", "code": "sa"}, {"name": "Serbia", "capital": "Belgrade", "code": "rs"},
-    {"name": "Singapore", "capital": "Singapore", "code": "sg"}, {"name": "Slovakia", "capital": "Bratislava", "code": "sk"},
-    {"name": "Slovenia", "capital": "Ljubljana", "code": "si"}, {"name": "South Africa", "capital": "Pretoria", "code": "za"},
-    {"name": "Spain", "capital": "Madrid", "code": "es"}, {"name": "Sri Lanka", "capital": "Kotte", "code": "lk"},
-    {"name": "Sudan", "capital": "Khartoum", "code": "sd"}, {"name": "Sweden", "capital": "Stockholm", "code": "se"},
-    {"name": "Switzerland", "capital": "Bern", "code": "ch"}, {"name": "Taiwan", "capital": "Taipei", "code": "tw"},
-    {"name": "Tanzania", "capital": "Dodoma", "code": "tz"}, {"name": "Thailand", "capital": "Bangkok", "code": "th"},
-    {"name": "Turkey", "capital": "Ankara", "code": "tr"}, {"name": "Ukraine", "capital": "Kyiv", "code": "ua"},
-    {"name": "UAE", "capital": "Abu Dhabi", "code": "ae"}, {"name": "United Kingdom", "capital": "London", "code": "gb"},
-    {"name": "USA", "capital": "Washington D.C.", "code": "us"}, {"name": "Uruguay", "capital": "Montevideo", "code": "uy"},
-    {"name": "Venezuela", "capital": "Caracas", "code": "ve"}, {"name": "Vietnam", "capital": "Hanoi", "code": "vn"},
-    {"name": "Zimbabwe", "capital": "Harare", "code": "zw"}
-]
+CAPITAL_POOL = [{"name": "Argentina", "capital": "Buenos Aires", "code": "ar"}, {"name": "Australia", "capital": "Canberra", "code": "au"}, {"name": "Austria", "capital": "Vienna", "code": "at"}, {"name": "Belarus", "capital": "Minsk", "code": "by"}, {"name": "Belgium", "capital": "Brussels", "code": "be"}, {"name": "Bolivia", "capital": "Sucre", "code": "bo"}, {"name": "Brazil", "capital": "Brasilia", "code": "br"}, {"name": "Bulgaria", "capital": "Sofia", "code": "bg"}, {"name": "Canada", "capital": "Ottawa", "code": "ca"}, {"name": "Chile", "capital": "Santiago", "code": "cl"}, {"name": "China", "capital": "Beijing", "code": "cn"}, {"name": "Colombia", "capital": "Bogotá", "code": "co"}, {"name": "Croatia", "capital": "Zagreb", "code": "hr"}, {"name": "Cuba", "capital": "Havana", "code": "cu"}, {"name": "Cyprus", "capital": "Nicosia", "code": "cy"}, {"name": "Czechia", "capital": "Prague", "code": "cz"}, {"name": "Denmark", "capital": "Copenhagen", "code": "dk"}, {"name": "Dominican Republic", "capital": "Santo Domingo", "code": "do"}, {"name": "Ecuador", "capital": "Quito", "code": "ec"}, {"name": "Egypt", "capital": "Cairo", "code": "eg"}, {"name": "Estonia", "capital": "Tallinn", "code": "ee"}, {"name": "Ethiopia", "capital": "Addis Ababa", "code": "et"}, {"name": "Fiji", "capital": "Suva", "code": "fj"}, {"name": "Finland", "capital": "Helsinki", "code": "fi"}, {"name": "France", "capital": "Paris", "code": "fr"}, {"name": "Germany", "capital": "Berlin", "code": "de"}, {"name": "Ghana", "capital": "Accra", "code": "gh"}, {"name": "Greece", "capital": "Athens", "code": "gr"}, {"name": "Grenada", "capital": "St. George's", "code": "gd"}, {"name": "Hungary", "capital": "Budapest", "code": "hu"}, {"name": "Iceland", "capital": "Reykjavík", "code": "is"}, {"name": "India", "capital": "New Delhi", "code": "in"}, {"name": "Indonesia", "capital": "Jakarta", "code": "id"}, {"name": "Iran", "capital": "Tehran", "code": "ir"}, {"name": "Iraq", "capital": "Baghdad", "code": "iq"}, {"name": "Ireland", "capital": "Dublin", "code": "ie"}, {"name": "Israel", "capital": "Jerusalem", "code": "il"}, {"name": "Italy", "capital": "Rome", "code": "it"}, {"name": "Jamaica", "capital": "Kingston", "code": "jm"}, {"name": "Japan", "capital": "Tokyo", "code": "jp"}, {"name": "Kazakhstan", "capital": "Astana", "code": "kz"}, {"name": "Kenya", "capital": "Nairobi", "code": "ke"}, {"name": "South Korea", "capital": "Seoul", "code": "kr"}, {"name": "Lithuania", "capital": "Vilnius", "code": "lt"}, {"name": "Luxembourg", "capital": "Luxembourg City", "code": "lu"}, {"name": "Malaysia", "capital": "Kuala Lumpur", "code": "my"}, {"name": "Mauritius", "capital": "Port Louis", "code": "mu"}, {"name": "Mexico", "capital": "Mexico City", "code": "mx"}, {"name": "Mongolia", "capital": "Ulaanbaatar", "code": "mn"}, {"name": "Morocco", "capital": "Rabat", "code": "ma"}, {"name": "Nepal", "capital": "Kathmandu", "code": "np"}, {"name": "Netherlands", "capital": "Amsterdam", "code": "nl"}, {"name": "New Zealand", "capital": "Wellington", "code": "nz"}, {"name": "Nigeria", "capital": "Abuja", "code": "ng"}, {"name": "Norway", "capital": "Oslo", "code": "no"}, {"name": "Pakistan", "capital": "Islamabad", "code": "pk"}, {"name": "Paraguay", "capital": "Asunción", "code": "py"}, {"name": "Peru", "capital": "Lima", "code": "pe"}, {"name": "Philippines", "capital": "Manila", "code": "ph"}, {"name": "Poland", "capital": "Warsaw", "code": "pl"}, {"name": "Portugal", "capital": "Lisbon", "code": "pt"}, {"name": "Qatar", "capital": "Doha", "code": "qa"}, {"name": "Romania", "capital": "Bucharest", "code": "ro"}, {"name": "Russia", "capital": "Moscow", "code": "ru"}, {"name": "Saudi Arabia", "capital": "Riyadh", "code": "sa"}, {"name": "Serbia", "capital": "Belgrade", "code": "rs"}, {"name": "Singapore", "capital": "Singapore", "code": "sg"}, {"name": "Slovakia", "capital": "Bratislava", "code": "sk"}, {"name": "Slovenia", "capital": "Ljubljana", "code": "si"}, {"name": "South Africa", "capital": "Pretoria", "code": "za"}, {"name": "Spain", "capital": "Madrid", "code": "es"}, {"name": "Sri Lanka", "capital": "Kotte", "code": "lk"}, {"name": "Sudan", "capital": "Khartoum", "code": "sd"}, {"name": "Sweden", "capital": "Stockholm", "code": "se"}, {"name": "Switzerland", "capital": "Bern", "code": "ch"}, {"name": "Taiwan", "capital": "Taipei", "code": "tw"}, {"name": "Tanzania", "capital": "Dodoma", "code": "tz"}, {"name": "Thailand", "capital": "Bangkok", "code": "th"}, {"name": "Turkey", "capital": "Ankara", "code": "tr"}, {"name": "Ukraine", "capital": "Kyiv", "code": "ua"}, {"name": "UAE", "capital": "Abu Dhabi", "code": "ae"}, {"name": "United Kingdom", "capital": "London", "code": "gb"}, {"name": "USA", "capital": "Washington D.C.", "code": "us"}, {"name": "Uruguay", "capital": "Montevideo", "code": "uy"}, {"name": "Venezuela", "capital": "Caracas", "code": "ve"}, {"name": "Vietnam", "capital": "Hanoi", "code": "vn"}, {"name": "Zimbabwe", "capital": "Harare", "code": "zw"}]
 
-# --- UTILITIES ---
 def similarity(a, b): return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
 def get_time_remaining():
@@ -149,10 +59,7 @@ def get_time_remaining():
     monday = (now + timedelta(days=(7 - now.weekday()) % 7)).replace(hour=0, minute=0, second=0, microsecond=0)
     if monday <= now: monday += timedelta(days=7)
     diff = monday - now
-    days = diff.days
-    hours, remainder = divmod(diff.seconds, 3600)
-    minutes, _ = divmod(remainder, 60)
-    return f"{days}d {hours}h {minutes}m remaining"
+    return f"{diff.days}d {diff.seconds // 3600}h {(diff.seconds % 3600) // 60}m remaining"
 
 def create_text_image(text):
     calc_width = max(750, (len(text) * 22) + 100)
@@ -186,26 +93,20 @@ def get_rank(uid, lb_dict):
         if str(u) == str(uid): return i + 1
     return len(sorted_lb) + 1
 
-# --- BOT SETUP ---
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), help_command=None)
 active_nick_targets = {}
 
 async def update_leaderboard_display():
     data = load_data(); channel = bot.get_channel(STATS_CHANNEL_ID)
     if not channel: return
-    
     def format_lb(lb_dict):
         sorted_lb = sorted(lb_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         return "\n".join([f"[{i+1}] <@{u}> - **{s}stars** {E_STAR}" for i, (u, s) in enumerate(sorted_lb)]) or "No data."
-
     all_time_dict = data.get("all_time", {})
     at_top = max(all_time_dict, key=all_time_dict.get) if all_time_dict else "None"
     wk_top = data.get("last_weekly_winner", "None")
-    time_rem = get_time_remaining()
-
     at_emb = discord.Embed(title="Nexus All-Time Leaderboard", description=f"{format_lb(all_time_dict)}\n\nAll time The All-Knowing - <@{at_top}>", color=0x2ECC71)
-    wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data.get('weekly', {}))}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({time_rem})", color=0x2ECC71)
-    
+    wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data.get('weekly', {}))}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({get_time_remaining()})", color=0x2ECC71)
     try:
         if data.get("lb_msg_id"):
             msg = await channel.fetch_message(data["lb_msg_id"])
@@ -223,31 +124,23 @@ async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
     rank = get_rank(user.id, data["all_time"])
     desc = f"{E_WIN} Rank #{rank}\n{E_INFO} {user.mention} won a star {E_STAR}!\n{E_CLICK} Check the Rankings: <#{STATS_CHANNEL_ID}>"
     emb = discord.Embed(description=desc, color=0x2ECC71)
-    
     if trigger_msg and mode not in ["nick", "capital"]:
         await trigger_msg.reply(embed=emb, mention_author=True)
     elif mode == "capital":
         await channel.send(embed=emb, reference=trigger_msg)
     else:
         await channel.send(f"{user.mention}", embed=emb)
-    
-    if update_lb:
-        await update_leaderboard_display()
+    if update_lb: await update_leaderboard_display()
 
-# --- CAPITAL QUIZ VIEW ---
 class FlagQuizView(discord.ui.View):
     def __init__(self, correct_ans, options, channel):
         super().__init__(timeout=50.0)
         self.correct_ans = correct_ans
         self.channel = channel
         self.winner = None
-        self.user_attempts = set() # Track who clicked
-
-        for option in options:
-            self.add_item(FlagButton(option))
-
+        self.user_attempts = set()
+        for option in options: self.add_item(FlagButton(option))
     async def on_timeout(self):
-        # Turn everything grey and disable if 50s pass
         for child in self.children:
             child.disabled = True
             child.style = discord.ButtonStyle.secondary
@@ -257,35 +150,22 @@ class FlagQuizView(discord.ui.View):
 class FlagButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: FlagQuizView = self.view
-        
-        # Rule: One person, one try
-        if interaction.user.id in view.user_attempts:
-            return await interaction.response.send_message("You already guessed!", ephemeral=True)
-        
+        if interaction.user.id in view.user_attempts: return await interaction.response.send_message("You already guessed!", ephemeral=True)
         view.user_attempts.add(interaction.user.id)
-
         if self.label == view.correct_ans:
             view.winner = interaction.user
             for child in view.children:
                 child.disabled = True
-                if child.label == view.correct_ans:
-                    child.style = discord.ButtonStyle.success # Green for winner
-                else:
-                    child.style = discord.ButtonStyle.secondary # Grey for others
-            
+                child.style = discord.ButtonStyle.success if child.label == view.correct_ans else discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
-            await award_winner(interaction.user, view.channel, "capital")
+            await award_winner(interaction.user, view.channel, "capital", trigger_msg=view.message)
             view.stop()
         else:
-            # Wrong answer: make just this button grey and disable it for that user
-            self.disabled = True 
+            self.disabled = True
             self.style = discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
-            
-# --- GAME LOGIC ---
 async def run_game(channel, mode=None, skip_lb_update=False):
     global game_queue
-    # 1. INITIALIZE EVERYTHING
     ans_list, reveal_ans, tolerance, file = [], "", 0, None
     now_str = datetime.now().strftime("Today at %I:%M %p")
     embed = discord.Embed(color=0x2ECC71)
@@ -296,19 +176,17 @@ async def run_game(channel, mode=None, skip_lb_update=False):
             random.shuffle(game_queue)
         mode = game_queue.pop(0)
 
-    # --- GAME MODES ---
     if mode == "type":
         target = random.choice(SENTENCE_POOL); ans_list = [target]; reveal_ans = target
         embed.title = "⌨️ Typing Game!"; embed.description = "Type the sentence in the image exactly!"
-        file = discord.File(create_text_image(target), filename="game.png")
-        embed.set_image(url="attachment://game.png")
+        file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
     elif mode == "emoji":
         target = random.choice(EMOJI_POOL); ans_list = [target]; reveal_ans = target
         embed.title = "✨ Emoji Game!"; embed.description = f"First to type the emoji '{target}' wins!"
     elif mode == "math":
         op = random.choice(["+", "-", "x", "/"])
         if op == "+": a, b = random.randint(10, 95), random.randint(10, 95); q, ans = f"{a} + {b}", str(a+b)
-        elif op == "-": a = random.randint(50, 195); b = random.randint(5, 45); q, ans = f"{a} - {b}", str(a-b)
+        elif op == "-": a, b = random.randint(50, 195), random.randint(5, 45); q, ans = f"{a} - {b}", str(a-b)
         elif op == "x": a, b = random.randint(2, 12), random.randint(2, 14); q, ans = f"{a} x {b}", str(a*b)
         else: b = random.randint(2, 10); res = random.randint(2, 15); a = b * res; q, ans = f"{a} / {b}", str(res)
         ans_list = [ans]; reveal_ans = ans; embed.title = "🔢 Solve the problem!!"; embed.description = f"What is **{q}**?"
@@ -325,32 +203,18 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         logo_item = random.choice(LOGO_DATA)
         brand_name, brand_domain = logo_item["name"], logo_item["domain"]
         clean_domain = brand_domain.replace("https://", "").replace("http://", "").split("/")[0]
-        ans_list = [brand_name]; reveal_ans = brand_name; tolerance = 1
-        embed.title = " Guess the Logo!"
-        embed.set_image(url=f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512")
+        ans_list, reveal_ans, tolerance = [brand_name], brand_name, 1
+        embed.title = " Guess the Logo!"; embed.set_image(url=f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512")
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
         options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3) + [correct_cap]
         random.shuffle(options)
         embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
         view = FlagQuizView(correct_cap, options, channel)
-        msg = await channel.send(embed=embed, view=view)
-        view.message = msg # Crucial for editing in FlagQuizView
-        
-        async def handle_timeout():
-            await asyncio.sleep(50.0)
-            if not view.winner:
-                for child in view.children: child.disabled = True; child.style = discord.ButtonStyle.secondary
-                try: await msg.edit(view=view)
-                except: pass
-        
-        asyncio.create_task(handle_timeout())
-        
-        # --- CAPITAL CASCADE RULE: Spawn next channel after 4s immediately ---
+        msg = await channel.send(embed=embed, view=view); view.message = msg
         await asyncio.sleep(4.0)
         await run_game(None) 
         return 
-        
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
@@ -359,64 +223,44 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         embed.title = "👤 Nickname Game!"; embed.description = "Change your nickname to match the image!"
         file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
 
-    # --- SEND THE ACTUAL MESSAGE (For Text Games) ---
     embed.set_footer(text=f"Earn a star • {now_str}")
     if file: await channel.send(file=file, embed=embed)
     else: await channel.send(embed=embed)
 
-    # --- TEXT GAME HANDLER (Wait -> Win -> 1s Sleep -> Cascade) ---
     async def game_handler():
         nonlocal ans_list, reveal_ans, tolerance
         try:
-            if mode == "nick":
-                await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
+            if mode == "nick": await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
             else:
                 def check(m):
                     if m.channel.id != channel.id or m.author.bot: return False
-                    content = m.content.strip().lower()
-                    for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
-                    return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
-                
+                    c = m.content.strip().lower()
+                    for inv in ["\u200d", "\u200b", "\ufeff"]: c = c.replace(inv, "")
+                    return any((similarity(c, a.lower()) >= 0.85 if tolerance else c == a.lower()) for a in ans_list)
                 winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
                 await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, update_lb=not skip_lb_update)
-            
-            # CASCADE RULE: Wait 1s after someone answers, then spawn next channel
-            await asyncio.sleep(1.0)
-            await run_game(None)
-            
+            await asyncio.sleep(1.0); await run_game(None)
         except asyncio.TimeoutError:
-            if reveal_ans and mode != "nick":
-                await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
-            # Cascade even on timeout
+            if reveal_ans and mode != "nick": await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded. The answer was `{reveal_ans}`", color=0xFF0000))
             await run_game(None)
         finally:
             if mode == "nick" and channel.id in active_nick_targets: del active_nick_targets[channel.id]
 
     asyncio.create_task(game_handler())
-    return
-        
-    
-    
-# --- COMMANDS ---
+
 def is_staff():
     async def pred(ctx): return ctx.author.id == OWNER_ID or any(r.id == STAFF_ROLE_ID for r in ctx.author.roles)
     return commands.check(pred)
 
-def is_owner():
-    async def pred(ctx): return ctx.author.id == OWNER_ID
-    return commands.check(pred)
-
 @bot.command()
 async def leaderboard(ctx):
-    data = load_data()
-    def format_lb(lb_dict):
+    data = load_data(); def format_lb(lb_dict):
         sorted_lb = sorted(lb_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         return "\n".join([f"[{i+1}] <@{u}> - **{s}stars** {E_STAR}" for i, (u, s) in enumerate(sorted_lb)]) or "No data."
     at_top = max(data["all_time"], key=data["all_time"].get) if data["all_time"] else "None"
     wk_top = data.get("last_weekly_winner", "None")
-    time_rem = get_time_remaining()
     at_emb = discord.Embed(title="Nexus All-Time Leaderboard", description=f"{format_lb(data['all_time'])}\n\nAll time The All-Knowing - <@{at_top}>", color=0x2ECC71)
-    wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data['weekly'])}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({time_rem})", color=0x2ECC71)
+    wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data['weekly'])}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({get_time_remaining()})", color=0x2ECC71)
     await ctx.send(embeds=[at_emb, wk_emb])
 
 @bot.command()
@@ -424,9 +268,7 @@ async def leaderboard(ctx):
 async def game(ctx):
     for cid in LOUNGE_IDS:
         chan = bot.get_channel(cid)
-        if chan:
-            try: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1) 
-            except: continue
+        if chan: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1)
     await update_leaderboard_display()
 
 @bot.command()
@@ -472,20 +314,12 @@ async def start_offset(ctx, minute: int):
 @bot.command()
 @is_staff()
 async def resetweekly(ctx):
-    data = load_data(); data["weekly"] = {}; save_data(data)
-    await update_leaderboard_display(); await ctx.send("✅ Weekly leaderboard reset.")
-
-@bot.command()
-@is_owner()
-async def resetalltime(ctx):
-    data = load_data(); data["all_time"] = {}; data["weekly"] = {}
-    save_data(data); await update_leaderboard_display(); await ctx.send("🚨 **All-Time and Weekly leaderboards wiped.**")
+    data = load_data(); data["weekly"] = {}; save_data(data); await update_leaderboard_display(); await ctx.send("✅ Weekly leaderboard reset.")
 
 @bot.command()
 @is_staff()
 async def setstars(ctx, member: discord.Member, amount: int):
-    data = load_data(); data["all_time"][str(member.id)] = amount; save_data(data)
-    await update_leaderboard_display(); await ctx.send(f"✅ {member.mention} stars set to {amount}.")
+    data = load_data(); data["all_time"][str(member.id)] = amount; save_data(data); await update_leaderboard_display(); await ctx.send(f"✅ {member.mention} stars set to {amount}.")
 
 @bot.command()
 @is_staff()
@@ -500,11 +334,8 @@ async def stars(ctx, member: discord.Member = None):
     data = load_data(); target = member or ctx.author; uid = str(target.id)
     count = data["all_time"].get(uid, 0); rank = get_rank(uid, data["all_time"])
     emb = discord.Embed(title=f"{target.display_name}'s Stars", description=f"{target.mention} have \n {count} stars {E_STAR}", color=0x2ECC71)
-    emb.set_thumbnail(url=target.display_avatar.url)
-    emb.set_footer(text=f"Rank #{rank} | {datetime.now().strftime('%I:%M %p')}")
-    await ctx.send(embed=emb)
+    emb.set_thumbnail(url=target.display_avatar.url); emb.set_footer(text=f"Rank #{rank} | {datetime.now().strftime('%I:%M %p')}"); await ctx.send(embed=emb)
 
-# --- TASKS ---
 @tasks.loop(minutes=1)
 async def automation_loop():
     data = load_data(); now = datetime.now(timezone.utc)
@@ -513,7 +344,7 @@ async def automation_loop():
             try:
                 winner_id = str(max(data["weekly"], key=data["weekly"].get))
                 guild = bot.get_guild(GUILD_ID)
-                role = guild.get_role(ALL_KNOWING_ROLE_ID) if guild else None
+                role = guild.get_role(ALL_KNOWING_ROLE_ID)
                 if role:
                     for m in role.members: await m.remove_roles(role)
                     win_mem = guild.get_member(int(winner_id))
@@ -527,9 +358,7 @@ async def automation_loop():
     if (now.minute - data.get("start_offset", 0)) % data.get("interval", 10) == 0:
         for cid in LOUNGE_IDS:
             chan = bot.get_channel(cid)
-            if chan:
-                try: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1) 
-                except: continue
+            if chan: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1)
         await update_leaderboard_display()
 
 @bot.event
@@ -549,3 +378,4 @@ async def on_member_update(before, after):
 
 keep_alive()
 bot.run(os.getenv('DISCORD_TOKEN'))
+    
