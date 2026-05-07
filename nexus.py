@@ -236,45 +236,56 @@ async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
 
 # --- CAPITAL QUIZ VIEW ---
 class FlagQuizView(discord.ui.View):
-    def __init__(self, correct_capital, options, channel):
+    def __init__(self, correct_ans, options, channel):
         super().__init__(timeout=50.0)
-        self.correct_capital = correct_capital
-        self.options = options
+        self.correct_ans = correct_ans
         self.channel = channel
         self.winner = None
-        self.attempted_users = set()
+        self.user_attempts = set() # Track who clicked
 
         for option in options:
-            btn = discord.ui.Button(label=option, style=discord.ButtonStyle.secondary)
-            btn.callback = self.make_callback(option)
-            self.add_item(btn)
-
-    def make_callback(self, option):
-        async def callback(interaction: discord.Interaction):
-            if self.winner: return
-            if interaction.user.id in self.attempted_users:
-                await interaction.response.send_message("Only one try allowed!", ephemeral=True)
-                return
-            self.attempted_users.add(interaction.user.id)
-            if option == self.correct_capital:
-                self.winner = interaction.user
-                for child in self.children:
-                    child.disabled = True
-                    if child.label == self.correct_capital: child.style = discord.ButtonStyle.success
-                await interaction.response.edit_message(view=self)
-                await award_winner(interaction.user, self.channel, "capital", trigger_msg=interaction.message)
-                self.stop()
-            else:
-                await interaction.response.send_message("❌ Wrong!", ephemeral=True)
-        return callback
+            self.add_item(FlagButton(option))
 
     async def on_timeout(self):
-        for child in self.children: child.disabled = True
+        # Turn everything grey and disable if 50s pass
+        for child in self.children:
+            child.disabled = True
+            child.style = discord.ButtonStyle.secondary
+        try: await self.message.edit(view=self)
+        except: pass
 
+class FlagButton(discord.ui.Button):
+    async def callback(self, interaction: discord.Interaction):
+        view: FlagQuizView = self.view
+        
+        # Rule: One person, one try
+        if interaction.user.id in view.user_attempts:
+            return await interaction.response.send_message("You already guessed!", ephemeral=True)
+        
+        view.user_attempts.add(interaction.user.id)
+
+        if self.label == view.correct_ans:
+            view.winner = interaction.user
+            for child in view.children:
+                child.disabled = True
+                if child.label == view.correct_ans:
+                    child.style = discord.ButtonStyle.success # Green for winner
+                else:
+                    child.style = discord.ButtonStyle.secondary # Grey for others
+            
+            await interaction.response.edit_message(view=view)
+            await award_winner(interaction.user, view.channel, "capital")
+            view.stop()
+        else:
+            # Wrong answer: make just this button grey and disable it for that user
+            self.disabled = True 
+            self.style = discord.ButtonStyle.secondary
+            await interaction.response.edit_message(view=view)
+            
 # --- GAME LOGIC ---
 async def run_game(channel, mode=None, skip_lb_update=False):
     global game_queue
-    # 1. INITIALIZE EVERYTHING FIRST - This prevents the "variable not defined" errors
+    # 1. INITIALIZE EVERYTHING
     ans_list, reveal_ans, tolerance, file = [], "", 0, None
     now_str = datetime.now().strftime("Today at %I:%M %p")
     embed = discord.Embed(color=0x2ECC71)
@@ -311,29 +322,12 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
         embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
     elif mode == "logo":
-        # Pick a random logo from your list
         logo_item = random.choice(LOGO_DATA)
-        brand_name = logo_item["name"]
-        brand_domain = logo_item["domain"]
-        
-        # Clean the domain (removes http/https and extra paths)
+        brand_name, brand_domain = logo_item["name"], logo_item["domain"]
         clean_domain = brand_domain.replace("https://", "").replace("http://", "").split("/")[0]
-
-        # Set game logic
-        ans_list = [brand_name]
-        reveal_ans = brand_name
-        tolerance = 1
-        
-        # Construct the URL
-        logo_url = f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512"
-        
-        # DEBUG: Check your console/logs to see if this URL looks right!
-        print(f"DEBUG: Logo URL is {logo_url}")
-        
+        ans_list = [brand_name]; reveal_ans = brand_name; tolerance = 1
         embed.title = " Guess the Logo!"
-        embed.set_image(url=logo_url)
-    
-    
+        embed.set_image(url=f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512")
     elif mode == "capital":
         target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
         options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3) + [correct_cap]
@@ -341,13 +335,22 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
         view = FlagQuizView(correct_cap, options, channel)
         msg = await channel.send(embed=embed, view=view)
+        view.message = msg # Crucial for editing in FlagQuizView
+        
         async def handle_timeout():
             await asyncio.sleep(50.0)
             if not view.winner:
-                for child in view.children: child.disabled = True
+                for child in view.children: child.disabled = True; child.style = discord.ButtonStyle.secondary
                 try: await msg.edit(view=view)
                 except: pass
-        asyncio.create_task(handle_tmeout()); await asyncio.sleep(4.0); return 
+        
+        asyncio.create_task(handle_timeout())
+        
+        # --- CAPITAL CASCADE RULE: Spawn next channel after 4s immediately ---
+        await asyncio.sleep(4.0)
+        await run_game(None) 
+        return 
+        
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
@@ -356,41 +359,42 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         embed.title = "👤 Nickname Game!"; embed.description = "Change your nickname to match the image!"
         file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
 
-    # --- 2. SEND THE ACTUAL MESSAGE ---
+    # --- SEND THE ACTUAL MESSAGE (For Text Games) ---
     embed.set_footer(text=f"Earn a star • {now_str}")
     if file: await channel.send(file=file, embed=embed)
     else: await channel.send(embed=embed)
 
-    # --- 3. THE ASYNC HANDLER (Captures all variables correctly) ---
+    # --- TEXT GAME HANDLER (Wait -> Win -> 1s Sleep -> Cascade) ---
     async def game_handler():
-        # Using the values assigned in the mode logic above
-        if mode == "nick":
-            try: await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
-            except asyncio.TimeoutError:
-                await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
-            finally:
-                if channel.id in active_nick_targets: del active_nick_targets[channel.id]
-        else:
-            def check(m):
-                if m.channel.id != channel.id or m.author.bot: return False
-                content = m.content.strip().lower()
-                for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
-                # Fixed: ensure similarity uses the ans_list populated in mode 'logo'
-                return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
-
-            try:
+        nonlocal ans_list, reveal_ans, tolerance
+        try:
+            if mode == "nick":
+                await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
+            else:
+                def check(m):
+                    if m.channel.id != channel.id or m.author.bot: return False
+                    content = m.content.strip().lower()
+                    for inv in ["\u200d", "\u200b", "\ufeff"]: content = content.replace(inv, "")
+                    return any((similarity(content, a.lower()) >= 0.85 if tolerance else content == a.lower()) for a in ans_list)
+                
                 winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
                 await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, update_lb=not skip_lb_update)
-            except asyncio.TimeoutError:
-                if reveal_ans:
-                    await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
+            
+            # CASCADE RULE: Wait 1s after someone answers, then spawn next channel
+            await asyncio.sleep(1.0)
+            await run_game(None)
+            
+        except asyncio.TimeoutError:
+            if reveal_ans and mode != "nick":
+                await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded in time. The answer was `{reveal_ans}`", color=0xFF0000))
+            # Cascade even on timeout
+            await run_game(None)
+        finally:
+            if mode == "nick" and channel.id in active_nick_targets: del active_nick_targets[channel.id]
 
     asyncio.create_task(game_handler())
-    await asyncio.sleep(4.0)
     return
-    
-                
-    
+        
     
     
 # --- COMMANDS ---
