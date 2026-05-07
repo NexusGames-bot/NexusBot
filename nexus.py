@@ -42,6 +42,7 @@ E_CLICK = "<a:click_1:1499338069944303677>"
 E_INFO = "<a:info_1:1499338148893687938>"
 E_STAR = "<a:star_2:1499315733442859008>"
 
+# Pools are compressed for copy-paste safety
 SENTENCE_POOL = ["The quick brown fox jumps over the lazy dog", "Nexus is the ultimate discord community", "Coding a bot is fun and rewarding", "Speed and accuracy are the keys to victory", "Welcome to the Nexus Lounge area", "Type this sentence as fast as you can", "Zeri is the most emo person here", "Zeri likes femboys the most"]
 EMOJI_POOL = ["😀", "😄", "😁", "😆", "😅", "😂", "🤣", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "😶", "😑", "😬", "🙄", "😯", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤮", "🤧", "😷", "🤒", "🤕", "🐶", "🐼", "🐨", "🐯", "🦁", "🐸", "🐵", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦢", "🦉", "🦚", "🦜", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐢", "🐍", "🦎", "🦖", "🦕", "🐙", "🦑", "🦐", "🦞", "🦀", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🦒", "🦘", "🐑", "🐐", "🦔", "🐾", "🐉", "🐲"]
 FLAG_DATA = {"ar": "argentina", "au": "australia", "at": "austria", "by": "belarus", "be": "belgium", "bo": "bolivia", "br": "brazil", "bg": "bulgaria", "ca": "canada", "cl": "chile", "cn": "china", "co": "colombia", "hr": "croatia", "cu": "cuba", "cy": "cyprus", "cz": "czech republic", "dk": "denmark", "do": "dominican republic", "ec": "ecuador", "eg": "egypt", "ee": "estonia", "et": "ethiopia", "fj": "fiji", "fi": "finland", "fr": "france", "de": "germany", "gh": "ghana", "gr": "greece", "gd": "grenada", "hu": "hungary", "is": "iceland", "in": "india", "id": "indonesia", "ir": "iran", "iq": "iraq", "ie": "ireland", "il": "israel", "it": "italy", "jm": "jamaica", "jp": "japan", "kz": "kazakhstan", "ke": "kenya", "kr": "south korea", "lt": "lithuania", "lu": "luxembourg", "my": "malaysia", "mu": "mauritius", "mx": "mexico", "mn": "mongolia", "ma": "morocco", "np": "nepal", "nl": "netherlands", "nz": "new zealand", "ng": "nigeria", "no": "norway", "pk": "pakistan", "py": "paraguay", "pe": "peru", "ph": "philippines", "pl": "poland", "pt": "portugal", "qa": "qatar", "ro": "romania", "ru": "russia", "sa": "saudi arabia", "rs": "serbia", "sg": "singapore", "sk": "slovakia", "si": "slovenia", "za": "south africa", "es": "spain", "lk": "sri lanka", "sd": "sudan", "se": "sweden", "ch": "switzerland", "tw": "taiwan", "tz": "tanzania", "th": "thailand", "tr": "turkey", "ua": "ukraine", "ae": "uae", "gb": "uk", "us": "usa", "uy": "uruguay", "ve": "venezuela", "vn": "vietnam", "zw": "zimbabwe"}
@@ -68,9 +69,7 @@ def create_text_image(text):
     try: font = ImageFont.load_default(size=40)
     except: font = ImageFont.load_default()
     d.text((50, 55), text, fill=(255, 255, 255), font=font)
-    buf = io.BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
+    buf = io.BytesIO(); img.save(buf, format='PNG'); buf.seek(0)
     return buf
 
 def load_data():
@@ -109,8 +108,7 @@ async def update_leaderboard_display():
     wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data.get('weekly', {}))}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({get_time_remaining()})", color=0x2ECC71)
     try:
         if data.get("lb_msg_id"):
-            msg = await channel.fetch_message(data["lb_msg_id"])
-            await msg.edit(embeds=[at_emb, wk_emb])
+            msg = await channel.fetch_message(data["lb_msg_id"]); await msg.edit(embeds=[at_emb, wk_emb])
         else: raise Exception
     except:
         new_msg = await channel.send(embeds=[at_emb, wk_emb]); data["lb_msg_id"] = new_msg.id; save_data(data)
@@ -124,28 +122,23 @@ async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
     rank = get_rank(user.id, data["all_time"])
     desc = f"{E_WIN} Rank #{rank}\n{E_INFO} {user.mention} won a star {E_STAR}!\n{E_CLICK} Check the Rankings: <#{STATS_CHANNEL_ID}>"
     emb = discord.Embed(description=desc, color=0x2ECC71)
-    if trigger_msg and mode not in ["nick", "capital"]:
-        await trigger_msg.reply(embed=emb, mention_author=True)
-    elif mode == "capital":
-        await channel.send(embed=emb, reference=trigger_msg)
-    else:
-        await channel.send(f"{user.mention}", embed=emb)
+    if trigger_msg and mode not in ["nick", "capital"]: await trigger_msg.reply(embed=emb, mention_author=True)
+    elif mode == "capital": await channel.send(embed=emb, reference=trigger_msg)
+    else: await channel.send(f"{user.mention}", embed=emb)
     if update_lb: await update_leaderboard_display()
 
 class FlagQuizView(discord.ui.View):
     def __init__(self, correct_ans, options, channel):
         super().__init__(timeout=50.0)
-        self.correct_ans = correct_ans
-        self.channel = channel
-        self.winner = None
+        self.correct_ans, self.channel, self.winner = correct_ans, channel, None
         self.user_attempts = set()
+        self.cascade_event = asyncio.Event() # NEW: Used to stop the 4s wait early
         for option in options: self.add_item(FlagButton(option))
     async def on_timeout(self):
-        for child in self.children:
-            child.disabled = True
-            child.style = discord.ButtonStyle.secondary
+        for child in self.children: child.disabled, child.style = True, discord.ButtonStyle.secondary
         try: await self.message.edit(view=self)
         except: pass
+        self.cascade_event.set() # If 50s pass without winner, trigger cascade anyway
 
 class FlagButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
@@ -159,10 +152,10 @@ class FlagButton(discord.ui.Button):
                 child.style = discord.ButtonStyle.success if child.label == view.correct_ans else discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
             await award_winner(interaction.user, view.channel, "capital", trigger_msg=view.message)
+            view.cascade_event.set() # WINNER FOUND: Cascade to next lounge NOW
             view.stop()
         else:
-            self.disabled = True
-            self.style = discord.ButtonStyle.secondary
+            self.disabled, self.style = True, discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
 async def run_game(channel, mode=None, skip_lb_update=False):
     global game_queue
@@ -176,6 +169,7 @@ async def run_game(channel, mode=None, skip_lb_update=False):
             random.shuffle(game_queue)
         mode = game_queue.pop(0)
 
+    # --- MODE LOGIC ---
     if mode == "type":
         target = random.choice(SENTENCE_POOL); ans_list = [target]; reveal_ans = target
         embed.title = "⌨️ Typing Game!"; embed.description = "Type the sentence in the image exactly!"
@@ -212,7 +206,8 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
         view = FlagQuizView(correct_cap, options, channel)
         msg = await channel.send(embed=embed, view=view); view.message = msg
-        await asyncio.sleep(4.0)
+        try: await asyncio.wait_for(view.cascade_event.wait(), timeout=4.0)
+        except asyncio.TimeoutError: pass
         await run_game(None) 
         return 
     elif mode == "nick":
@@ -271,58 +266,42 @@ async def game(ctx):
         if chan: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1)
     await update_leaderboard_display()
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def emoji(ctx): await run_game(ctx.channel, "emoji")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def math(ctx): await run_game(ctx.channel, "math")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def flag(ctx): await run_game(ctx.channel, "flags")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def language(ctx): await run_game(ctx.channel, "lang")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def color(ctx): await run_game(ctx.channel, "colors")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def nick(ctx): await run_game(ctx.channel, "nick")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def type(ctx): await run_game(ctx.channel, "type")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def capital(ctx): await run_game(ctx.channel, "capital")
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def logo(ctx): await run_game(ctx.channel, "logo")
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def frequency(ctx, minutes: int):
-    data = load_data(); data["interval"] = max(1, minutes); save_data(data)
-    await ctx.send(f"✅ Frequency set to **{minutes} minutes**.")
+    data = load_data(); data["interval"] = max(1, minutes); save_data(data); await ctx.send(f"✅ Frequency set to **{minutes} minutes**.")
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def start_offset(ctx, minute: int):
-    data = load_data(); data["start_offset"] = minute % 60; save_data(data)
-    await ctx.send(f"✅ Loop offset set to **:{minute:02d}** mark.")
+    data = load_data(); data["start_offset"] = minute % 60; save_data(data); await ctx.send(f"✅ Loop offset set to **:{minute:02d}** mark.")
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def resetweekly(ctx):
     data = load_data(); data["weekly"] = {}; save_data(data); await update_leaderboard_display(); await ctx.send("✅ Weekly leaderboard reset.")
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def setstars(ctx, member: discord.Member, amount: int):
     data = load_data(); data["all_time"][str(member.id)] = amount; save_data(data); await update_leaderboard_display(); await ctx.send(f"✅ {member.mention} stars set to {amount}.")
 
-@bot.command()
-@is_staff()
+@bot.command() @is_staff()
 async def blacklist(ctx, member: discord.Member):
     data = load_data(); uid = str(member.id)
     if uid in data["blacklist"]: data["blacklist"].remove(uid); msg = "un-blacklisted"
@@ -338,13 +317,12 @@ async def stars(ctx, member: discord.Member = None):
 
 @tasks.loop(minutes=1)
 async def automation_loop():
-    data = load_data(); now = datetime.now(timezone.utc)
+    data, now = load_data(), datetime.now(timezone.utc)
     if now.weekday() == 0 and now.hour == 0 and now.minute == 0:
         if data["weekly"]:
             try:
                 winner_id = str(max(data["weekly"], key=data["weekly"].get))
-                guild = bot.get_guild(GUILD_ID)
-                role = guild.get_role(ALL_KNOWING_ROLE_ID)
+                guild = bot.get_guild(GUILD_ID); role = guild.get_role(ALL_KNOWING_ROLE_ID)
                 if role:
                     for m in role.members: await m.remove_roles(role)
                     win_mem = guild.get_member(int(winner_id))
@@ -372,10 +350,8 @@ async def on_member_update(before, after):
         if after.display_name == info["target"]:
             chan = bot.get_channel(cid)
             if chan:
-                await award_winner(after, chan, "nick")
-                info["event"].set()
+                await award_winner(after, chan, "nick"); info["event"].set()
                 if cid in active_nick_targets: del active_nick_targets[cid]
 
-keep_alive()
-bot.run(os.getenv('DISCORD_TOKEN'))
+keep_alive(); bot.run(os.getenv('DISCORD_TOKEN'))
     
