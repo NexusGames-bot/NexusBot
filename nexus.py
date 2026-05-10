@@ -66,10 +66,15 @@ def create_text_image(text):
     calc_width = max(750, (len(text) * 22) + 100)
     img = Image.new('RGB', (calc_width, 160), color=(43, 45, 49))
     d = ImageDraw.Draw(img)
-    try: font = ImageFont.load_default(size=40)
-    except: font = ImageFont.load_default()
+    try:
+        # Try to load a better font, fallback to default
+        font = ImageFont.truetype("arial.ttf", 40)
+    except:
+        font = ImageFont.load_default()
     d.text((50, 55), text, fill=(255, 255, 255), font=font)
-    buf = io.BytesIO(); img.save(buf, format='PNG'); buf.seek(0)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
     return buf
 
 def load_data():
@@ -94,72 +99,163 @@ def get_rank(uid, lb_dict):
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), help_command=None)
 active_nick_targets = {}
+pending_wins = []  # Store wins to batch update leaderboard
+
+async def batch_update_leaderboard():
+    """Update leaderboard display once after all lounges are done"""
+    if not pending_wins:
+        return
+    
+    # Apply all pending wins to database
+    data = load_data()
+    for win in pending_wins:
+        uid = str(win["user_id"])
+        if uid not in data["blacklist"]:
+            data["all_time"][uid] = data["all_time"].get(uid, 0) + 1
+            data["weekly"][uid] = data["weekly"].get(uid, 0) + 1
+    save_data(data)
+    
+    # Clear pending wins
+    pending_wins.clear()
+    
+    # Update the displayed leaderboard
+    await update_leaderboard_display()
 
 async def update_leaderboard_display():
-    data = load_data(); channel = bot.get_channel(STATS_CHANNEL_ID)
+    data = load_data()
+    channel = bot.get_channel(STATS_CHANNEL_ID)
     if not channel: return
+    
     def format_lb(lb_dict):
         sorted_lb = sorted(lb_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         return "\n".join([f"[{i+1}] <@{u}> - **{s}stars** {E_STAR}" for i, (u, s) in enumerate(sorted_lb)]) or "No data."
+    
     all_time_dict = data.get("all_time", {})
     at_top = max(all_time_dict, key=all_time_dict.get) if all_time_dict else "None"
     wk_top = data.get("last_weekly_winner", "None")
     at_emb = discord.Embed(title="Nexus All-Time Leaderboard", description=f"{format_lb(all_time_dict)}\n\nAll time The All-Knowing - <@{at_top}>", color=0x2ECC71)
     wk_emb = discord.Embed(title="Nexus Weekly Leaderboard", description=f"{format_lb(data.get('weekly', {}))}\n\nCurrent All-Knowing - <@{wk_top}>\n\n({get_time_remaining()})", color=0x2ECC71)
+    
     try:
         if data.get("lb_msg_id"):
-            msg = await channel.fetch_message(data["lb_msg_id"]); await msg.edit(embeds=[at_emb, wk_emb])
+            msg = await channel.fetch_message(data["lb_msg_id"])
+            await msg.edit(embeds=[at_emb, wk_emb])
         else: raise Exception
     except:
-        new_msg = await channel.send(embeds=[at_emb, wk_emb]); data["lb_msg_id"] = new_msg.id; save_data(data)
+        new_msg = await channel.send(embeds=[at_emb, wk_emb])
+        data["lb_msg_id"] = new_msg.id
+        save_data(data)
 
-async def award_winner(user, channel, mode, trigger_msg=None, update_lb=True):
-    data = load_data(); uid = str(user.id)
-    if uid in data["blacklist"]: return
-    data["all_time"][uid] = data["all_time"].get(uid, 0) + 1
-    data["weekly"][uid] = data["weekly"].get(uid, 0) + 1
-    save_data(data)
+async def award_winner(user, channel, mode, trigger_msg=None, add_to_batch=True):
+    """Record a win - either batch or immediate"""
+    uid = str(user.id)
+    data = load_data()
+    
+    # Check blacklist
+    if uid in data["blacklist"]:
+        return False
+    
+    if add_to_batch:
+        # Add to batch for later processing
+        pending_wins.append({"user_id": uid, "channel_id": channel.id, "mode": mode})
+    else:
+        # Immediate update (for manual commands)
+        data["all_time"][uid] = data["all_time"].get(uid, 0) + 1
+        data["weekly"][uid] = data["weekly"].get(uid, 0) + 1
+        save_data(data)
+        await update_leaderboard_display()
+    
+    # Send winner announcement immediately (always)
     rank = get_rank(user.id, data["all_time"])
     desc = f"{E_WIN} Rank #{rank}\n{E_INFO} {user.mention} won a star {E_STAR}!\n{E_CLICK} Check the Rankings: <#{STATS_CHANNEL_ID}>"
     emb = discord.Embed(description=desc, color=0x2ECC71)
-    if trigger_msg and mode not in ["nick", "capital"]: await trigger_msg.reply(embed=emb, mention_author=True)
-    elif mode == "capital": await channel.send(embed=emb, reference=trigger_msg)
-    else: await channel.send(f"{user.mention}", embed=emb)
-    if update_lb: await update_leaderboard_display()
+    
+    if trigger_msg and mode not in ["nick", "capital"]:
+        await trigger_msg.reply(embed=emb, mention_author=True)
+    elif mode == "capital":
+        await channel.send(embed=emb, reference=trigger_msg if trigger_msg else None)
+    else:
+        await channel.send(f"{user.mention}", embed=emb)
+    
+    return True
 
 class FlagQuizView(discord.ui.View):
-    def __init__(self, correct_ans, options, channel):
+    def __init__(self, correct_ans, options, channel, original_channel_id):
         super().__init__(timeout=50.0)
-        self.correct_ans, self.channel, self.winner = correct_ans, channel, None
+        self.correct_ans = correct_ans
+        self.channel = channel
+        self.original_channel_id = original_channel_id
+        self.winner = None
         self.user_attempts = set()
-        self.cascade_event = asyncio.Event() # NEW: Used to stop the 4s wait early
-        for option in options: self.add_item(FlagButton(option))
+        self.game_ended = False
+        self.message = None
+        
+        for option in options:
+            self.add_item(FlagButton(option))
+    
     async def on_timeout(self):
-        for child in self.children: child.disabled, child.style = True, discord.ButtonStyle.secondary
-        try: await self.message.edit(view=self)
-        except: pass
-        self.cascade_event.set() # If 50s pass without winner, trigger cascade anyway
+        if self.game_ended:
+            return
+        self.game_ended = True
+        # Disable all buttons and make them grey
+        for child in self.children:
+            child.disabled = True
+            child.style = discord.ButtonStyle.secondary
+        try:
+            if self.message:
+                await self.message.edit(view=self)
+        except:
+            pass
+    
+    def end_game(self):
+        self.game_ended = True
+        self.stop()
 
 class FlagButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         view: FlagQuizView = self.view
-        if interaction.user.id in view.user_attempts: return await interaction.response.send_message("You already guessed!", ephemeral=True)
+        
+        if view.game_ended:
+            return await interaction.response.send_message("This game has already ended!", ephemeral=True)
+        
+        if interaction.user.id in view.user_attempts:
+            return await interaction.response.send_message("You already guessed!", ephemeral=True)
+        
         view.user_attempts.add(interaction.user.id)
+        
         if self.label == view.correct_ans:
             view.winner = interaction.user
+            view.game_ended = True
+            
+            # Update all buttons: correct = green, others = grey, all disabled
             for child in view.children:
                 child.disabled = True
-                child.style = discord.ButtonStyle.success if child.label == view.correct_ans else discord.ButtonStyle.secondary
+                if child.label == view.correct_ans:
+                    child.style = discord.ButtonStyle.success
+                else:
+                    child.style = discord.ButtonStyle.secondary
+            
             await interaction.response.edit_message(view=view)
-            await award_winner(interaction.user, view.channel, "capital", trigger_msg=view.message)
-            view.cascade_event.set() # WINNER FOUND: Cascade to next lounge NOW
+            
+            # Award winner (add to batch)
+            original_channel = interaction.guild.get_channel(view.original_channel_id)
+            if original_channel:
+                await award_winner(interaction.user, original_channel, "capital", trigger_msg=view.message, add_to_batch=True)
+            
             view.stop()
         else:
-            self.disabled, self.style = True, discord.ButtonStyle.secondary
+            self.disabled = True
+            self.style = discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
+
 async def run_game(channel, mode=None, skip_lb_update=False):
+    """Run a single game in a specific channel"""
     global game_queue
-    ans_list, reveal_ans, tolerance, file = [], "", 0, None
+    
+    ans_list = []
+    reveal_ans = ""
+    tolerance = 0
+    file = None
     now_str = datetime.now().strftime("Today at %I:%M %p")
     embed = discord.Embed(color=0x2ECC71)
 
@@ -171,85 +267,185 @@ async def run_game(channel, mode=None, skip_lb_update=False):
 
     # --- MODE LOGIC ---
     if mode == "type":
-        target = random.choice(SENTENCE_POOL); ans_list = [target]; reveal_ans = target
-        embed.title = "⌨️ Typing Game!"; embed.description = "Type the sentence in the image exactly!"
-        file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
+        target = random.choice(SENTENCE_POOL)
+        ans_list = [target]
+        reveal_ans = target
+        embed.title = "⌨️ Typing Game!"
+        embed.description = "Type the sentence in the image exactly!"
+        file = discord.File(create_text_image(target), filename="game.png")
+        embed.set_image(url="attachment://game.png")
+        
     elif mode == "emoji":
-        target = random.choice(EMOJI_POOL); ans_list = [target]; reveal_ans = target
-        embed.title = "✨ Emoji Game!"; embed.description = f"First to type the emoji '{target}' wins!"
+        target = random.choice(EMOJI_POOL)
+        ans_list = [target]
+        reveal_ans = target
+        embed.title = "✨ Emoji Game!"
+        embed.description = f"First to type the emoji '{target}' wins!"
+        
     elif mode == "math":
         op = random.choice(["+", "-", "x", "/"])
-        if op == "+": a, b = random.randint(10, 95), random.randint(10, 95); q, ans = f"{a} + {b}", str(a+b)
-        elif op == "-": a, b = random.randint(50, 195), random.randint(5, 45); q, ans = f"{a} - {b}", str(a-b)
-        elif op == "x": a, b = random.randint(2, 12), random.randint(2, 14); q, ans = f"{a} x {b}", str(a*b)
-        else: b = random.randint(2, 10); res = random.randint(2, 15); a = b * res; q, ans = f"{a} / {b}", str(res)
-        ans_list = [ans]; reveal_ans = ans; embed.title = "🔢 Solve the problem!!"; embed.description = f"What is **{q}**?"
+        if op == "+":
+            a, b = random.randint(10, 95), random.randint(10, 95)
+            q, ans = f"{a} + {b}", str(a+b)
+        elif op == "-":
+            a, b = random.randint(50, 195), random.randint(5, 45)
+            q, ans = f"{a} - {b}", str(a-b)
+        elif op == "x":
+            a, b = random.randint(2, 12), random.randint(2, 14)
+            q, ans = f"{a} x {b}", str(a*b)
+        else:
+            b = random.randint(2, 10)
+            res = random.randint(2, 15)
+            a = b * res
+            q, ans = f"{a} / {b}", str(res)
+        ans_list = [ans]
+        reveal_ans = ans
+        embed.title = "🔢 Solve the problem!!"
+        embed.description = f"What is **{q}**?"
+        
     elif mode == "flags":
-        code, name = random.choice(list(FLAG_DATA.items())); ans_list = [name]; reveal_ans = name.title()
-        embed.title = "🚩 Guess the flag!"; embed.set_image(url=f"https://flagcdn.com/w640/{code}.png"); tolerance = 1
+        code, name = random.choice(list(FLAG_DATA.items()))
+        ans_list = [name]
+        reveal_ans = name.title()
+        embed.title = "🚩 Guess the flag!"
+        embed.set_image(url=f"https://flagcdn.com/w640/{code}.png")
+        tolerance = 1
+        
     elif mode == "lang":
-        phrase, lang = random.choice(list(LANG_DATA.items())); ans_list = [lang]; reveal_ans = lang.title()
-        embed.title = "🌐 Guess the Language!"; embed.description = f"📝 What language is `{phrase}`?"; tolerance = 1
+        phrase, lang = random.choice(list(LANG_DATA.items()))
+        ans_list = [lang]
+        reveal_ans = lang.title()
+        embed.title = "🌐 Guess the Language!"
+        embed.description = f"📝 What language is `{phrase}`?"
+        tolerance = 1
+        
     elif mode == "colors":
-        mix, res = random.choice(list(COLOR_DATA.items())); ans_list = [res.lower()]; reveal_ans = res.title()
-        embed.title = "🎨 Guess the Color!"; embed.description = f"🖍️ What color does **{mix}** make?"
+        mix, res = random.choice(list(COLOR_DATA.items()))
+        ans_list = [res.lower()]
+        reveal_ans = res.title()
+        embed.title = "🎨 Guess the Color!"
+        embed.description = f"🖍️ What color does **{mix}** make?"
+        
     elif mode == "logo":
         logo_item = random.choice(LOGO_DATA)
-        brand_name, brand_domain = logo_item["name"], logo_item["domain"]
+        brand_name = logo_item["name"]
+        brand_domain = logo_item["domain"]
         clean_domain = brand_domain.replace("https://", "").replace("http://", "").split("/")[0]
-        ans_list, reveal_ans, tolerance = [brand_name], brand_name, 1
-        embed.title = " Guess the Logo!"; embed.set_image(url=f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512")
+        ans_list = [brand_name]
+        reveal_ans = brand_name
+        tolerance = 1
+        embed.title = " Guess the Logo!"
+        embed.set_image(url=f"https://img.logo.dev/{clean_domain}?token={LOGODEV_KEY}&size=512")
+        
     elif mode == "capital":
-        target = random.choice(CAPITAL_POOL); correct_cap = target['capital']
+        target = random.choice(CAPITAL_POOL)
+        correct_cap = target['capital']
         options = random.sample([c['capital'] for c in CAPITAL_POOL if c['capital'] != correct_cap], 3) + [correct_cap]
         random.shuffle(options)
-        embed.title = "What is the capital of this country?"; embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
-        view = FlagQuizView(correct_cap, options, channel)
-        msg = await channel.send(embed=embed, view=view); view.message = msg
-        try: await asyncio.wait_for(view.cascade_event.wait(), timeout=4.0)
-        except asyncio.TimeoutError: pass
-        await run_game(None) 
-        return 
+        embed.title = "What is the capital of this country?"
+        embed.set_image(url=f"https://flagcdn.com/w320/{target['code']}.png")
+        
+        view = FlagQuizView(correct_cap, options, channel, channel.id)
+        msg = await channel.send(embed=embed, view=view)
+        view.message = msg
+        
+        # For capital mode, we don't wait for answer here - just return
+        # The view handles everything and cascade will happen after 4s delay
+        return view  # Return view so caller can track it
+        
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
         animals = ['Tiger', 'Puff', 'Dolphin', 'Zebra', 'Bunny', 'Falcon', 'Rhino', 'Shark', 'Monkey', 'Panda', 'Koala', 'Turtle', 'Hamster', 'Lizard', 'Kitten', 'Puppy', 'Otter', 'Eagle', 'Raven', 'Fox']
-        target = f"{random.choice(adjectives)}_{random.choice(animals)}"; reveal_ans = target
-        win_event = asyncio.Event(); active_nick_targets[channel.id] = {"target": target, "event": win_event}
-        embed.title = "👤 Nickname Game!"; embed.description = "Change your nickname to match the image!"
-        file = discord.File(create_text_image(target), filename="game.png"); embed.set_image(url="attachment://game.png")
+        target = f"{random.choice(adjectives)}_{random.choice(animals)}"
+        reveal_ans = target
+        win_event = asyncio.Event()
+        active_nick_targets[channel.id] = {"target": target, "event": win_event}
+        embed.title = "👤 Nickname Game!"
+        embed.description = "Change your nickname to match the image!"
+        file = discord.File(create_text_image(target), filename="game.png")
+        embed.set_image(url="attachment://game.png")
 
     embed.set_footer(text=f"Earn a star • {now_str}")
-    if file: await channel.send(file=file, embed=embed)
-    else: await channel.send(embed=embed)
+    
+    if mode == "capital":
+        # Already handled above
+        pass
+    elif file:
+        await channel.send(file=file, embed=embed)
+    else:
+        await channel.send(embed=embed)
 
-    async def game_handler():
-        nonlocal ans_list, reveal_ans, tolerance
+    # Handle non-capital game waiting logic
+    if mode != "capital" and mode != "nick":
+        def check(m):
+            if m.channel.id != channel.id or m.author.bot:
+                return False
+            c = m.content.strip().lower()
+            for inv in ["\u200d", "\u200b", "\ufeff"]:
+                c = c.replace(inv, "")
+            return any((similarity(c, a.lower()) >= 0.85 if tolerance else c == a.lower()) for a in ans_list)
+        
         try:
-            if mode == "nick": await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
-            else:
-                def check(m):
-                    if m.channel.id != channel.id or m.author.bot: return False
-                    c = m.content.strip().lower()
-                    for inv in ["\u200d", "\u200b", "\ufeff"]: c = c.replace(inv, "")
-                    return any((similarity(c, a.lower()) >= 0.85 if tolerance else c == a.lower()) for a in ans_list)
-                winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
-                await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, update_lb=not skip_lb_update)
-            await asyncio.sleep(1.0); await run_game(None)
+            winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
+            await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, add_to_batch=True)
+            return True  # Indicates a winner
         except asyncio.TimeoutError:
-            if reveal_ans and mode != "nick": await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded. The answer was `{reveal_ans}`", color=0xFF0000))
-            await run_game(None)
-        finally:
-            if mode == "nick" and channel.id in active_nick_targets: del active_nick_targets[channel.id]
+            if reveal_ans:
+                await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded. The answer was `{reveal_ans}`", color=0xFF0000))
+            return False  # Indicates timeout/no winner
+    
+    elif mode == "nick":
+        try:
+            await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
+            return True
+        except asyncio.TimeoutError:
+            if channel.id in active_nick_targets:
+                del active_nick_targets[channel.id]
+            return False
+    
+    return True
 
-    asyncio.create_task(game_handler())
+async def process_all_lounges(skip_lb_update=False):
+    """Process games in all lounges sequentially"""
+    global pending_wins
+    
+    # Clear pending wins from previous round
+    pending_wins.clear()
+    
+    capital_views = []  # Store capital game views for tracking
+    
+    for i, cid in enumerate(LOUNGE_IDS):
+        chan = bot.get_channel(cid)
+        if not chan:
+            continue
+        
+        # Run game and check if it's capital mode
+        result = await run_game(chan, skip_lb_update=True)
+        
+        # If result is a view (capital mode), store it
+        if isinstance(result, FlagQuizView):
+            capital_views.append(result)
+            # For capital: wait 4 seconds before moving to next lounge
+            await asyncio.sleep(4)
+        else:
+            # For non-capital: if there was a winner, wait 1 second after their win
+            # The wait is already handled inside run_game's winner response
+            # Just add a small buffer
+            await asyncio.sleep(1)
+    
+    # After all lounges processed, batch update leaderboard once
+    if not skip_lb_update:
+        await batch_update_leaderboard()
 
 def is_staff():
-    async def pred(ctx): return ctx.author.id == OWNER_ID or any(r.id == STAFF_ROLE_ID for r in ctx.author.roles)
+    async def pred(ctx):
+        return ctx.author.id == OWNER_ID or any(r.id == STAFF_ROLE_ID for r in ctx.author.roles)
     return commands.check(pred)
 
 @bot.command()
 async def leaderboard(ctx):
-    data = load_data(); def format_lb(lb_dict):
+    data = load_data()
+    def format_lb(lb_dict):
         sorted_lb = sorted(lb_dict.items(), key=lambda x: x[1], reverse=True)[:10]
         return "\n".join([f"[{i+1}] <@{u}> - **{s}stars** {E_STAR}" for i, (u, s) in enumerate(sorted_lb)]) or "No data."
     at_top = max(data["all_time"], key=data["all_time"].get) if data["all_time"] else "None"
@@ -261,88 +457,161 @@ async def leaderboard(ctx):
 @bot.command()
 @is_staff()
 async def game(ctx):
-    for cid in LOUNGE_IDS:
-        chan = bot.get_channel(cid)
-        if chan: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1)
-    await update_leaderboard_display()
+    await process_all_lounges(skip_lb_update=False)
 
-@bot.command() @is_staff()
-async def emoji(ctx): await run_game(ctx.channel, "emoji")
-@bot.command() @is_staff()
-async def math(ctx): await run_game(ctx.channel, "math")
-@bot.command() @is_staff()
-async def flag(ctx): await run_game(ctx.channel, "flags")
-@bot.command() @is_staff()
-async def language(ctx): await run_game(ctx.channel, "lang")
-@bot.command() @is_staff()
-async def color(ctx): await run_game(ctx.channel, "colors")
-@bot.command() @is_staff()
-async def nick(ctx): await run_game(ctx.channel, "nick")
-@bot.command() @is_staff()
-async def type(ctx): await run_game(ctx.channel, "type")
-@bot.command() @is_staff()
-async def capital(ctx): await run_game(ctx.channel, "capital")
-@bot.command() @is_staff()
-async def logo(ctx): await run_game(ctx.channel, "logo")
+@bot.command()
+@is_staff()
+async def emoji(ctx):
+    await run_game(ctx.channel, "emoji")
+    await batch_update_leaderboard()
 
-@bot.command() @is_staff()
+@bot.command()
+@is_staff()
+async def math(ctx):
+    await run_game(ctx.channel, "math")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def flag(ctx):
+    await run_game(ctx.channel, "flags")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def language(ctx):
+    await run_game(ctx.channel, "lang")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def color(ctx):
+    await run_game(ctx.channel, "colors")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def nick(ctx):
+    await run_game(ctx.channel, "nick")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def type(ctx):
+    await run_game(ctx.channel, "type")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def capital(ctx):
+    await run_game(ctx.channel, "capital")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
+async def logo(ctx):
+    await run_game(ctx.channel, "logo")
+    await batch_update_leaderboard()
+
+@bot.command()
+@is_staff()
 async def frequency(ctx, minutes: int):
-    data = load_data(); data["interval"] = max(1, minutes); save_data(data); await ctx.send(f"✅ Frequency set to **{minutes} minutes**.")
+    data = load_data()
+    data["interval"] = max(1, minutes)
+    save_data(data)
+    await ctx.send(f"✅ Frequency set to **{minutes} minutes**.")
 
-@bot.command() @is_staff()
+@bot.command()
+@is_staff()
 async def start_offset(ctx, minute: int):
-    data = load_data(); data["start_offset"] = minute % 60; save_data(data); await ctx.send(f"✅ Loop offset set to **:{minute:02d}** mark.")
+    data = load_data()
+    data["start_offset"] = minute % 60
+    save_data(data)
+    await ctx.send(f"✅ Loop offset set to **:{minute:02d}** mark.")
 
-@bot.command() @is_staff()
+@bot.command()
+@is_staff()
 async def resetweekly(ctx):
-    data = load_data(); data["weekly"] = {}; save_data(data); await update_leaderboard_display(); await ctx.send("✅ Weekly leaderboard reset.")
+    data = load_data()
+    data["weekly"] = {}
+    save_data(data)
+    await update_leaderboard_display()
+    await ctx.send("✅ Weekly leaderboard reset.")
 
-@bot.command() @is_staff()
+@bot.command()
+@is_staff()
 async def setstars(ctx, member: discord.Member, amount: int):
-    data = load_data(); data["all_time"][str(member.id)] = amount; save_data(data); await update_leaderboard_display(); await ctx.send(f"✅ {member.mention} stars set to {amount}.")
+    data = load_data()
+    data["all_time"][str(member.id)] = amount
+    save_data(data)
+    await update_leaderboard_display()
+    await ctx.send(f"✅ {member.mention} stars set to {amount}.")
 
-@bot.command() @is_staff()
+@bot.command()
+@is_staff()
 async def blacklist(ctx, member: discord.Member):
-    data = load_data(); uid = str(member.id)
-    if uid in data["blacklist"]: data["blacklist"].remove(uid); msg = "un-blacklisted"
-    else: data["blacklist"].append(uid); msg = "blacklisted"
-    save_data(data); await ctx.send(f"✅ {member.mention} is now {msg}.")
+    data = load_data()
+    uid = str(member.id)
+    if uid in data["blacklist"]:
+        data["blacklist"].remove(uid)
+        msg = "un-blacklisted"
+    else:
+        data["blacklist"].append(uid)
+        msg = "blacklisted"
+    save_data(data)
+    await ctx.send(f"✅ {member.mention} is now {msg}.")
 
 @bot.command()
 async def stars(ctx, member: discord.Member = None):
-    data = load_data(); target = member or ctx.author; uid = str(target.id)
-    count = data["all_time"].get(uid, 0); rank = get_rank(uid, data["all_time"])
+    data = load_data()
+    target = member or ctx.author
+    uid = str(target.id)
+    count = data["all_time"].get(uid, 0)
+    rank = get_rank(uid, data["all_time"])
     emb = discord.Embed(title=f"{target.display_name}'s Stars", description=f"{target.mention} have \n {count} stars {E_STAR}", color=0x2ECC71)
-    emb.set_thumbnail(url=target.display_avatar.url); emb.set_footer(text=f"Rank #{rank} | {datetime.now().strftime('%I:%M %p')}"); await ctx.send(embed=emb)
+    emb.set_thumbnail(url=target.display_avatar.url)
+    emb.set_footer(text=f"Rank #{rank} | {datetime.now().strftime('%I:%M %p')}")
+    await ctx.send(embed=emb)
 
 @tasks.loop(minutes=1)
 async def automation_loop():
-    data, now = load_data(), datetime.now(timezone.utc)
+    data = load_data()
+    now = datetime.now(timezone.utc)
+    
+    # Weekly reset on Monday at midnight
     if now.weekday() == 0 and now.hour == 0 and now.minute == 0:
         if data["weekly"]:
             try:
                 winner_id = str(max(data["weekly"], key=data["weekly"].get))
-                guild = bot.get_guild(GUILD_ID); role = guild.get_role(ALL_KNOWING_ROLE_ID)
+                guild = bot.get_guild(GUILD_ID)
+                role = guild.get_role(ALL_KNOWING_ROLE_ID)
                 if role:
-                    for m in role.members: await m.remove_roles(role)
+                    for m in role.members:
+                        await m.remove_roles(role)
                     win_mem = guild.get_member(int(winner_id))
-                    if win_mem: await win_mem.add_roles(role)
+                    if win_mem:
+                        await win_mem.add_roles(role)
                 chan = bot.get_channel(STATS_CHANNEL_ID)
-                if chan: await chan.send(embed=discord.Embed(title="🏆 Weekly Champion!", description=f"<@{winner_id}> won the week!", color=0x2ECC71))
+                if chan:
+                    await chan.send(embed=discord.Embed(title="🏆 Weekly Champion!", description=f"<@{winner_id}> won the week!", color=0x2ECC71))
                 data["last_weekly_winner"] = winner_id
-            except: pass
-            data["weekly"] = {}; save_data(data)
-    await update_leaderboard_display()
-    if (now.minute - data.get("start_offset", 0)) % data.get("interval", 10) == 0:
-        for cid in LOUNGE_IDS:
-            chan = bot.get_channel(cid)
-            if chan: await run_game(chan, skip_lb_update=True); await asyncio.sleep(1)
+            except:
+                pass
+            data["weekly"] = {}
+            save_data(data)
         await update_leaderboard_display()
+    
+    # Check if it's time to run games
+    if (now.minute - data.get("start_offset", 0)) % data.get("interval", 10) == 0:
+        await process_all_lounges(skip_lb_update=False)
 
 @bot.event
 async def on_ready():
-    if not automation_loop.is_running(): automation_loop.start()
+    if not automation_loop.is_running():
+        automation_loop.start()
     print(f"Logged in as {bot.user}")
+    print(f"Loaded {len(LOUNGE_IDS)} lounge channels")
+    print(f"Game modes: {GAME_MODES}")
 
 @bot.event
 async def on_member_update(before, after):
@@ -350,8 +619,15 @@ async def on_member_update(before, after):
         if after.display_name == info["target"]:
             chan = bot.get_channel(cid)
             if chan:
-                await award_winner(after, chan, "nick"); info["event"].set()
-                if cid in active_nick_targets: del active_nick_targets[cid]
+                await award_winner(after, chan, "nick", add_to_batch=True)
+                info["event"].set()
+                if cid in active_nick_targets:
+                    del active_nick_targets[cid]
 
-keep_alive(); bot.run(os.getenv('DISCORD_TOKEN'))
-    
+# Start the bot
+keep_alive()
+token = os.getenv('DISCORD_TOKEN')
+if not token:
+    print("ERROR: DISCORD_TOKEN environment variable not set!")
+    exit(1)
+bot.run(token)
