@@ -67,7 +67,6 @@ def create_text_image(text):
     img = Image.new('RGB', (calc_width, 160), color=(43, 45, 49))
     d = ImageDraw.Draw(img)
     try:
-        # Try to load a better font, fallback to default
         font = ImageFont.truetype("arial.ttf", 40)
     except:
         font = ImageFont.load_default()
@@ -100,6 +99,7 @@ def get_rank(uid, lb_dict):
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all(), help_command=None)
 active_nick_targets = {}
 pending_wins = []  # Store wins to batch update leaderboard
+active_capital_views = []  # Store active capital game views
 
 async def batch_update_leaderboard():
     """Update leaderboard display once after all lounges are done"""
@@ -248,8 +248,8 @@ class FlagButton(discord.ui.Button):
             self.style = discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=view)
 
-async def run_game(channel, mode=None, skip_lb_update=False):
-    """Run a single game in a specific channel"""
+async def run_game_and_wait(channel, mode=None):
+    """Run a single game in a specific channel and WAIT for completion (win or timeout)"""
     global game_queue
     
     ans_list = []
@@ -349,9 +349,10 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         msg = await channel.send(embed=embed, view=view)
         view.message = msg
         
-        # For capital mode, we don't wait for answer here - just return
-        # The view handles everything and cascade will happen after 4s delay
-        return view  # Return view so caller can track it
+        # For capital mode, we wait for the view to complete (50s timeout or winner)
+        # But we don't stop the cascade - we just let it run in background
+        # Return immediately so cascade can continue after 4 seconds
+        return mode  # Return mode so caller knows it's capital
         
     elif mode == "nick":
         adjectives = ['Tipsy', 'Fluffy', 'Dizzy', 'Zesty', 'Bubbly', 'Funky', 'Rowdy', 'Jelly', 'Sassy', 'Mochi', 'Goofy', 'Sleepy', 'Hyper', 'Lazy', 'Cool', 'Epic', 'Rusty', 'Shiny', 'Tiny', 'Chilly', 'Silly', 'Grumpy', 'Lucky', 'Cranky', 'Jumpy', 'Wobbly', 'Fancy', 'Gloomy', 'Spicy', 'Nutty']
@@ -368,14 +369,14 @@ async def run_game(channel, mode=None, skip_lb_update=False):
     embed.set_footer(text=f"Earn a star • {now_str}")
     
     if mode == "capital":
-        # Already handled above
-        pass
+        # Already handled above - return mode
+        return mode
     elif file:
         await channel.send(file=file, embed=embed)
     else:
         await channel.send(embed=embed)
 
-    # Handle non-capital game waiting logic
+    # Handle non-capital game waiting logic (THIS IS THE KEY FIX)
     if mode != "capital" and mode != "nick":
         def check(m):
             if m.channel.id != channel.id or m.author.bot:
@@ -388,51 +389,60 @@ async def run_game(channel, mode=None, skip_lb_update=False):
         try:
             winner_msg = await bot.wait_for("message", timeout=50.0, check=check)
             await award_winner(winner_msg.author, channel, mode, trigger_msg=winner_msg, add_to_batch=True)
-            return True  # Indicates a winner
+            # Wait 1 second after winner announcement before moving to next lounge
+            await asyncio.sleep(1)
+            return mode
         except asyncio.TimeoutError:
             if reveal_ans:
                 await channel.send(embed=discord.Embed(description=f"{E_INFO} Nobody responded. The answer was `{reveal_ans}`", color=0xFF0000))
-            return False  # Indicates timeout/no winner
+            # Wait 1 second after timeout message before moving
+            await asyncio.sleep(1)
+            return mode
     
     elif mode == "nick":
         try:
             await asyncio.wait_for(active_nick_targets[channel.id]["event"].wait(), timeout=50.0)
-            return True
+            await asyncio.sleep(1)  # Wait 1 second after win
+            return mode
         except asyncio.TimeoutError:
             if channel.id in active_nick_targets:
                 del active_nick_targets[channel.id]
-            return False
+            await asyncio.sleep(1)  # Wait 1 second after timeout
+            return mode
     
-    return True
+    return mode
 
 async def process_all_lounges(skip_lb_update=False):
-    """Process games in all lounges sequentially"""
+    """Process games in all lounges sequentially - waits for each game to complete"""
     global pending_wins
     
     # Clear pending wins from previous round
     pending_wins.clear()
-    
-    capital_views = []  # Store capital game views for tracking
     
     for i, cid in enumerate(LOUNGE_IDS):
         chan = bot.get_channel(cid)
         if not chan:
             continue
         
-        # Run game and check if it's capital mode
-        result = await run_game(chan, skip_lb_update=True)
+        print(f"Starting game in lounge {i+1}: {chan.name}")
         
-        # If result is a view (capital mode), store it
-        if isinstance(result, FlagQuizView):
-            capital_views.append(result)
+        # Run game and wait for it to complete (either win or timeout)
+        result_mode = await run_game_and_wait(chan, skip_lb_update=True)
+        
+        # Check if this was a capital game
+        if result_mode == "capital":
             # For capital: wait 4 seconds before moving to next lounge
+            # BUT the buttons remain active in the background (already handled by FlagQuizView)
+            print(f"Capital game started in {chan.name} - waiting 4 seconds before next lounge...")
             await asyncio.sleep(4)
         else:
-            # For non-capital: if there was a winner, wait 1 second after their win
-            # The wait is already handled inside run_game's winner response
-            # Just add a small buffer
-            await asyncio.sleep(1)
+            # For non-capital games, the wait is already inside run_game_and_wait
+            # Just add a small buffer to ensure everything is sent
+            await asyncio.sleep(0.5)
+        
+        print(f"Moving to next lounge...")
     
+    print("All lounges processed - updating leaderboard...")
     # After all lounges processed, batch update leaderboard once
     if not skip_lb_update:
         await batch_update_leaderboard()
@@ -458,59 +468,60 @@ async def leaderboard(ctx):
 @is_staff()
 async def game(ctx):
     await process_all_lounges(skip_lb_update=False)
+    await ctx.send("✅ All lounge games completed!")
 
 @bot.command()
 @is_staff()
 async def emoji(ctx):
-    await run_game(ctx.channel, "emoji")
+    await run_game_and_wait(ctx.channel, "emoji")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def math(ctx):
-    await run_game(ctx.channel, "math")
+    await run_game_and_wait(ctx.channel, "math")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def flag(ctx):
-    await run_game(ctx.channel, "flags")
+    await run_game_and_wait(ctx.channel, "flags")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def language(ctx):
-    await run_game(ctx.channel, "lang")
+    await run_game_and_wait(ctx.channel, "lang")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def color(ctx):
-    await run_game(ctx.channel, "colors")
+    await run_game_and_wait(ctx.channel, "colors")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def nick(ctx):
-    await run_game(ctx.channel, "nick")
+    await run_game_and_wait(ctx.channel, "nick")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def type(ctx):
-    await run_game(ctx.channel, "type")
+    await run_game_and_wait(ctx.channel, "type")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def capital(ctx):
-    await run_game(ctx.channel, "capital")
+    await run_game_and_wait(ctx.channel, "capital")
     await batch_update_leaderboard()
 
 @bot.command()
 @is_staff()
 async def logo(ctx):
-    await run_game(ctx.channel, "logo")
+    await run_game_and_wait(ctx.channel, "logo")
     await batch_update_leaderboard()
 
 @bot.command()
